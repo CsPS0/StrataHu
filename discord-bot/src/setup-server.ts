@@ -18,6 +18,7 @@ import {
   createRoleSelectorPayload,
   createVerificationPayload
 } from './roles';
+import { applyAllChannelPermissions, postAllChannelRulesets } from './channel-rules';
 
 interface ChannelSpec {
   name: string;
@@ -572,7 +573,12 @@ export async function setupServer(targetGuildId?: string): Promise<void> {
       }
     }
 
-    console.log('\n✅ A Discord szerver struktúrája, hitelesítése és botjai sikeresen konfigurálva lettek!');
+    // 3. Szerepkör-alapú jogosultságok (RBAC) és szobai szabályzatok élesítése
+    console.log('\n3. Csatornánkénti jogosultsági szintek és szabályzatok érvényesítése...');
+    await applyAllChannelPermissions(guild);
+    await postAllChannelRulesets(guild);
+
+    console.log('\n✅ A Discord szerver struktúrája, hitelesítése, jogosultságai és szabályzatai sikeresen konfigurálva lettek!');
   } finally {
     client.destroy();
   }
