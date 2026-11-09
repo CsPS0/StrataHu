@@ -10,7 +10,8 @@
     "status": "bun run src/cli.ts status",
     "announce": "bun run src/cli.ts announce",
     "post-project": "bun run src/cli.ts post-project",
-    "post-seed-projects": "bun run src/cli.ts post-seed-projects"
+    "post-seed-projects": "bun run src/cli.ts post-seed-projects",
+    "weekly-spotlight": "bun run src/cli.ts post-weekly-spotlight"
   },
   "dependencies": {
     "discord.js": "^14.17.3",

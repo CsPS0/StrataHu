@@ -198,6 +198,87 @@ async function handlePostSeedProjects(limit: number = 5) {
   console.log('✅ Kiemelt projektek közzététele befejeződött!');
 }
 
+async function handlePostWeeklySpotlight(projectName?: string) {
+  const config = getDiscordConfig();
+  const projects = getCatalogProjects();
+  let project: any;
+
+  if (projectName) {
+    const q = projectName.toLowerCase().trim();
+    project = projects.find((p: any) => p.name.toLowerCase().includes(q) || p.id === q);
+  } else {
+    const candidates = projects.filter((p: any) => p.tier === 'S' || (p.rank && p.rank <= 15));
+    project = candidates[Math.floor(Math.random() * candidates.length)] || projects[0];
+  }
+
+  if (!project) {
+    console.error('Nem található projekt a Hét Projektjéhez.');
+    return;
+  }
+
+  const client = await getClient();
+  try {
+    const guild = config.guildId
+      ? await client.guilds.fetch(config.guildId)
+      : client.guilds.cache.first();
+
+    if (!guild) throw new Error('Szerver nem található.');
+
+    const channels = await guild.channels.fetch();
+    const starChannel = channels.find(
+      (c) => c && c.isTextBased() && c.name.includes('hét-projektje')
+    ) as TextChannel | undefined;
+
+    if (!starChannel) throw new Error('Nem található a hét-projektje csatorna!');
+
+    const embed = new EmbedBuilder()
+      .setTitle(`⭐ A HÉT PROJEKTJE: ${project.name}`)
+      .setColor(Colors.Gold)
+      .setDescription(project.longDescription || project.description)
+      .addFields(
+        { name: '👤 Készítő / Szervezet', value: project.authorHandle, inline: true },
+        { name: '📂 Kategória', value: project.category || 'Projekt', inline: true },
+        { name: '🏆 Besorolás', value: `${project.tier || 'S'} Tier ${project.rank ? `(#${project.rank})` : ''}`, inline: true },
+        { name: '🛠️ Technológiai Stack', value: (project.techStack || []).join(' • ') || 'N/A', inline: false }
+      )
+      .setFooter({ text: 'StrataHu • A Hét Kiemelt Magyar Projektje' })
+      .setTimestamp();
+
+    if (project.highlights && project.highlights.length > 0) {
+      embed.addFields({
+        name: '🌟 Kiemelkedő Jellemzők',
+        value: project.highlights.map((h: string) => `• ${h}`).join('\n'),
+        inline: false
+      });
+    }
+
+    if (project.imageUrl && (project.imageUrl.startsWith('http://') || project.imageUrl.startsWith('https://'))) {
+      embed.setImage(project.imageUrl);
+    }
+
+    const row = new ActionRowBuilder<ButtonBuilder>();
+    if (project.repositoryUrl) {
+      row.addComponents(
+        new ButtonBuilder().setLabel('GitHub Repó').setStyle(ButtonStyle.Link).setURL(project.repositoryUrl)
+      );
+    }
+    if (project.liveDemoUrl) {
+      row.addComponents(
+        new ButtonBuilder().setLabel('Élő Bemutató').setStyle(ButtonStyle.Link).setURL(project.liveDemoUrl)
+      );
+    }
+
+    await starChannel.send({
+      embeds: [embed],
+      components: row.components.length > 0 ? [row] : []
+    });
+
+    console.log(`✅ A Hét Projektje (${project.name}) sikeresen közzétéve a #${starChannel.name} csatornában!`);
+  } finally {
+    client.destroy();
+  }
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const command = args[0] || 'status';
@@ -236,9 +317,15 @@ async function main() {
         break;
       }
 
+      case 'post-weekly-spotlight': {
+        const name = args[1];
+        await handlePostWeeklySpotlight(name);
+        break;
+      }
+
       default:
         console.log(`Ismeretlen parancs: ${command}`);
-        console.log('Elérhető parancsok: setup, status, announce, post-project, post-seed-projects');
+        console.log('Elérhető parancsok: setup, status, announce, post-project, post-seed-projects, post-weekly-spotlight');
         break;
     }
   } catch (err: any) {
