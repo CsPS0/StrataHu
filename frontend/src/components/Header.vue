@@ -23,12 +23,11 @@ const emit = defineEmits<{
             class="group flex items-center gap-3.5 text-left"
             @click.prevent="emit('update:activeView', 'explore')"
           >
-            <div
-              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-bold text-white shadow-md shadow-indigo-500/20 transition-transform group-hover:scale-105"
-              aria-hidden="true"
-            >
-              S
-            </div>
+            <img
+              src="/icons/stratahu-icon.jpg"
+              alt="StrataHu Logo"
+              class="h-10 w-10 shrink-0 rounded-xl object-cover ring-1 ring-white/10 shadow-md shadow-indigo-500/20 transition-transform group-hover:scale-105"
+            />
             <div>
               <div class="flex items-center gap-2">
                 <span class="text-lg font-bold tracking-tight text-white">StrataHu</span>
