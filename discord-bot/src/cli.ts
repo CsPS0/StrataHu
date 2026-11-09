@@ -12,6 +12,7 @@ import fs from 'fs';
 import path from 'path';
 import { getDiscordConfig } from './config';
 import { setupServer } from './setup-server';
+import { setupCommunity } from './setup-community';
 
 function getCatalogProjects(): any[] {
   const possiblePaths = [
@@ -37,8 +38,10 @@ async function getClient(): Promise<Client> {
       GatewayIntentBits.GuildMembers
     ]
   });
-  await client.login(config.token);
-  return client;
+  return new Promise((resolve, reject) => {
+    client.once('clientReady', () => resolve(client));
+    client.login(config.token).catch(reject);
+  });
 }
 
 async function handleStatus() {
@@ -46,7 +49,7 @@ async function handleStatus() {
   const client = await getClient();
   try {
     const guild = config.guildId
-      ? await client.guilds.fetch(config.guildId)
+      ? await client.guilds.fetch({ guild: config.guildId, withCounts: true })
       : client.guilds.cache.first();
 
     if (!guild) {
@@ -81,7 +84,7 @@ async function handleAnnounce(title: string, content: string) {
   const client = await getClient();
   try {
     const guild = config.guildId
-      ? await client.guilds.fetch(config.guildId)
+      ? await client.guilds.fetch({ guild: config.guildId, withCounts: true })
       : client.guilds.cache.first();
 
     if (!guild) throw new Error('Szerver nem található.');
@@ -126,7 +129,7 @@ async function handlePostProject(projectNameOrId: string) {
   const client = await getClient();
   try {
     const guild = config.guildId
-      ? await client.guilds.fetch(config.guildId)
+      ? await client.guilds.fetch({ guild: config.guildId, withCounts: true })
       : client.guilds.cache.first();
 
     if (!guild) throw new Error('Szerver nem található.');
@@ -219,7 +222,7 @@ async function handlePostWeeklySpotlight(projectName?: string) {
   const client = await getClient();
   try {
     const guild = config.guildId
-      ? await client.guilds.fetch(config.guildId)
+      ? await client.guilds.fetch({ guild: config.guildId, withCounts: true })
       : client.guilds.cache.first();
 
     if (!guild) throw new Error('Szerver nem található.');
@@ -288,6 +291,18 @@ async function main() {
       case 'setup':
         await setupServer(args[1]);
         break;
+
+      case 'setup-community': {
+        const config = getDiscordConfig();
+        const client = await getClient();
+        const guild = config.guildId
+          ? await client.guilds.fetch(config.guildId)
+          : client.guilds.cache.first();
+        if (!guild) throw new Error('Szerver nem található');
+        await setupCommunity(guild);
+        process.exit(0);
+        break;
+      }
 
       case 'status':
         await handleStatus();
