@@ -1,0 +1,23 @@
+{
+  "name": "stratahu-discord-bot",
+  "version": "1.0.0",
+  "description": "StrataHu Hungarian Developer Community Discord Management Bot & Agentic Bridge",
+  "main": "src/bot.ts",
+  "type": "module",
+  "scripts": {
+    "start": "bun run src/bot.ts",
+    "setup": "bun run src/cli.ts setup",
+    "status": "bun run src/cli.ts status",
+    "announce": "bun run src/cli.ts announce",
+    "post-project": "bun run src/cli.ts post-project",
+    "post-seed-projects": "bun run src/cli.ts post-seed-projects"
+  },
+  "dependencies": {
+    "discord.js": "^14.17.3",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  }
+}

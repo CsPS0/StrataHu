@@ -1,0 +1,86 @@
+# ============================================================================
+# Environment & Secrets (STRICT ISOLATION)
+# ============================================================================
+.env
+.env.*
+!.env.example
+*.env
+**/appsettings.Production.json
+**/appsettings.Staging.json
+**/appsettings.Local.json
+**/secrets.json
+
+# ============================================================================
+# .NET / C# Build Artifacts & IDE
+# ============================================================================
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.VisualState.xml
+TestResult.xml
+nunit-*.xml
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+mono_crash.*
+*.nupkg
+*.snupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
+launchSettings.json.user
+.vs/
+.idea/
+*.DotSettings.user
+
+# ============================================================================
+# Node.js / Vite / Vue Frontend
+# ============================================================================
+node_modules/
+dist/
+dist-ssr/
+coverage/
+*.local
+.vite/
+.vercel/
+.output/
+.turbo/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.tsbuildinfo
+
+# ============================================================================
+# Docker & Databases
+# ============================================================================
+postgres-data/
+pgdata/
+*.db
+*.sqlite
+*.sqlite3
+
+# ============================================================================
+# OS Generated Files
+# ============================================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
