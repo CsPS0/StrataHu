@@ -12,7 +12,12 @@ import {
   TextChannel
 } from 'discord.js';
 import { getDiscordConfig } from './config';
-import { ALL_ROLES, createRoleSelectorPayload } from './roles';
+import {
+  ALL_ROLES,
+  createBotsDirectoryPayload,
+  createRoleSelectorPayload,
+  createVerificationPayload
+} from './roles';
 
 interface ChannelSpec {
   name: string;
@@ -40,8 +45,18 @@ const SERVER_STRUCTURE: CategorySpec[] = [
         readOnly: true
       },
       {
+        name: '🔐・hitelesítés',
+        topic: 'Új tagok hitelesítése, bot-védelem és GitHub fejlesztői fiók összekapcsolás.',
+        readOnly: true
+      },
+      {
         name: '🎭・szerepkör-választó',
         topic: 'Válaszd ki az érdeklődési köreidet és technológiai szakterületedet az interaktív menüben!',
+        readOnly: true
+      },
+      {
+        name: '🤖・bot-útmutató',
+        topic: 'Közösségi és védelmi botok (Zene, Amari, Sapphire, Wick, esmBot) bemutatása és meghívása.',
         readOnly: true
       },
       {
@@ -62,6 +77,14 @@ const SERVER_STRUCTURE: CategorySpec[] = [
       {
         name: '💬・általános-társalgó',
         topic: 'Kötetlen beszélgetések a magyar fejlesztői ökoszisztémáról és technológiákról.'
+      },
+      {
+        name: '📊・ranglista-és-szintek',
+        topic: 'AmariBot és közösségi aktivitási szintek, heti és összesített magyar ranglista.'
+      },
+      {
+        name: '🎨・média-és-memek',
+        topic: 'Képszerkesztés, animációk, mémek és esmBot parancsok (&caption, &magik, stb.).'
       },
       {
         name: '🛠️・fejlesztői-fórum',
@@ -134,11 +157,16 @@ const SERVER_STRUCTURE: CategorySpec[] = [
     channels: [
       {
         name: '🤖・ai-parancsok',
-        topic: 'Interakció a StrataHu AI Botjával (/projekt, /top10, /uj-bekuldes, /szerepkorok).'
+        topic: 'Interakció a StrataHu AI Botjával (/projekt, /top10, /hitelesites, /szerepkorok).'
       },
       {
         name: '📜・audit-napló',
-        topic: 'Rendszerüzenetek, moderációs események és frissítési napló.',
+        topic: 'Rendszerüzenetek, hitelesítések, moderációs események és frissítési napló.',
+        readOnly: true
+      },
+      {
+        name: '🛡️・biztonsági-napló',
+        topic: 'Wick / Beemo anti-spam, karantén és szervervédelmi eseménynapló.',
         readOnly: true
       }
     ]
@@ -147,7 +175,15 @@ const SERVER_STRUCTURE: CategorySpec[] = [
     name: '🔊 │ HANGCSATORNÁK',
     channels: [
       {
+        name: '🎵・zene-parancsok',
+        topic: 'Zenebot parancsok (Jockie Music: m!play, m!skip, m!queue).'
+      },
+      {
         name: '🔊・Közös Kódolás',
+        type: ChannelType.GuildVoice
+      },
+      {
+        name: '🔊・Zene Szoba',
         type: ChannelType.GuildVoice
       },
       {
@@ -404,7 +440,6 @@ export async function setupServer(targetGuildId?: string): Promise<void> {
         if (chSpec.name === '👋・üdvözlet-és-szabályzat' && channel.type === ChannelType.GuildText) {
           const textCh = channel as TextChannel;
           const messages = await textCh.messages.fetch({ limit: 10 });
-          // Ha csak 1 régi/teszt üzenet van, vagy üres, töröljük és kitesszük a teljes szabályzatot
           const hasFullRules = messages.some((m) => m.embeds.some((e) => e.title?.includes('Code of Conduct')));
           if (!hasFullRules) {
             console.log(`      📝 Hivatalos részletes szabályzat és köszöntő közzététele...`);
@@ -423,10 +458,11 @@ export async function setupServer(targetGuildId?: string): Promise<void> {
                 {
                   name: '🚀 Gyors kezdési lépések új tagoknak',
                   value:
-                    '1️⃣ **Szerepkörök**: Ugorj be a `#🎭・szerepkör-választó` szobába és válaszd ki a technológiáidat!\n' +
-                    '2️⃣ **Beköszönés**: Írj egy szót magadról vagy az érdeklődésedről a `#💬・általános-társalgó` csatornában!\n' +
-                    '3️⃣ **Projekt bemutatás**: Hozz létre saját posztot a `📦・projekt-beküldések` fórumban!\n' +
-                    '4️⃣ **Katalógus**: Böngészd át az 1000+ magyar projektet a **http://localhost:3000** (stratahu.dev) oldalon!'
+                    '1️⃣ **Hitelesítés**: Kattints a `#🔐・hitelesítés` szobára a tagságod megerősítéséhez!\n' +
+                    '2️⃣ **Szerepkörök**: Ugorj be a `#🎭・szerepkör-választó` szobába és válaszd ki a technológiáidat!\n' +
+                    '3️⃣ **Beköszönés**: Írj egy szót magadról a `#💬・általános-társalgó` csatornában!\n' +
+                    '4️⃣ **Projekt bemutatás**: Hozz létre saját posztot a `📦・projekt-beküldések` fórumban!\n' +
+                    '5️⃣ **Katalógus**: Böngészd át az 1000+ magyar projektet a **http://localhost:3000** (stratahu.dev) oldalon!'
                 }
               )
               .setFooter({ text: 'StrataHu • Magyar Fejlesztések Kurátori Tárháza' });
@@ -478,6 +514,17 @@ export async function setupServer(targetGuildId?: string): Promise<void> {
           }
         }
 
+        // Kezdő üzenetek: Hitelesítés (Verification Gate)
+        if (chSpec.name === '🔐・hitelesítés' && channel.type === ChannelType.GuildText) {
+          const textCh = channel as TextChannel;
+          const messages = await textCh.messages.fetch({ limit: 5 });
+          if (messages.size === 0) {
+            console.log(`      🔐 Hitelesítési kapu üzenet közzététele...`);
+            const payload = createVerificationPayload();
+            await textCh.send(payload);
+          }
+        }
+
         // Kezdő üzenetek: Interaktív szerepkör-választó
         if (chSpec.name === '🎭・szerepkör-választó' && channel.type === ChannelType.GuildText) {
           const textCh = channel as TextChannel;
@@ -485,6 +532,17 @@ export async function setupServer(targetGuildId?: string): Promise<void> {
           if (messages.size === 0) {
             console.log(`      🎭 Szerepkör-választó interaktív menü közzététele...`);
             const payload = createRoleSelectorPayload();
+            await textCh.send(payload);
+          }
+        }
+
+        // Kezdő üzenetek: Bot útmutató és 1-kattintásos meghívó tárház
+        if (chSpec.name === '🤖・bot-útmutató' && channel.type === ChannelType.GuildText) {
+          const textCh = channel as TextChannel;
+          const messages = await textCh.messages.fetch({ limit: 5 });
+          if (messages.size === 0) {
+            console.log(`      🤖 Ajánlott botok tárháza közzététele...`);
+            const payload = createBotsDirectoryPayload();
             await textCh.send(payload);
           }
         }
@@ -501,7 +559,8 @@ export async function setupServer(targetGuildId?: string): Promise<void> {
               .setDescription('Itt találod a platformhoz kapcsolódó legfontosabb hivatalos hivatkozásokat:')
               .addFields(
                 { name: '🌐 Weboldal & Katalógus', value: '[http://localhost:3000](http://localhost:3000) (stratahu.dev)', inline: true },
-                { name: '🐙 GitHub Forráskód', value: '[github.com/StrataHu/StrataHu](https://github.com/StrataHu/StrataHu)', inline: true },
+                { name: '💬 Discord Állandó Meghívó', value: '[https://discord.gg/kNt5sqzM6w](https://discord.gg/kNt5sqzM6w)', inline: true },
+                { name: '🐙 GitHub Forráskód', value: '[github.com/CsPS0/StrataHu](https://github.com/CsPS0/StrataHu)', inline: true },
                 { name: '📡 REST API Végpont', value: '`http://localhost:5000/api/projects`', inline: true },
                 { name: '⚖️ Eltávolítás & Moderáció', value: 'moderation@stratahu.dev (24 órás garancia)', inline: false }
               )
@@ -513,7 +572,7 @@ export async function setupServer(targetGuildId?: string): Promise<void> {
       }
     }
 
-    console.log('\n✅ A Discord szerver struktúrája, szabályzata és fórumai sikeresen konfigurálva lettek!');
+    console.log('\n✅ A Discord szerver struktúrája, hitelesítése és botjai sikeresen konfigurálva lettek!');
   } finally {
     client.destroy();
   }

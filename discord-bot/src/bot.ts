@@ -33,6 +33,12 @@ function getCatalogProjects(): any[] {
 
 const commands = [
   new SlashCommandBuilder()
+    .setName('hitelesites')
+    .setDescription('Fejlesztői hitelesítés és profil összekapcsolása GitHub fiókkal')
+    .addStringOption((opt) =>
+      opt.setName('github').setDescription('A GitHub felhasználóneved (pl. octocat, yourname)').setRequired(true)
+    ),
+  new SlashCommandBuilder()
     .setName('projekt')
     .setDescription('Magyar fejlesztésű projekt keresése a StrataHu katalógusban')
     .addStringOption((opt) =>
@@ -95,23 +101,52 @@ async function startBot() {
   });
 
   // =========================================================================
-  // AUTOMATIZÁCIÓ: Új tagok automatikus kezelése (Auto-Role & Üdvözlés)
+  // AUTOMATIZÁCIÓ: Új tagok és botok automatikus kezelése (Auto-Role & Gate)
   // =========================================================================
   client.on('guildMemberAdd', async (member) => {
     try {
-      console.log(`👋 Új tag csatlakozott a szerverhez: ${member.user.tag} (${member.id})`);
+      console.log(`👋 Új tag vagy bot csatlakozott a szerverhez: ${member.user.tag} (${member.id})`);
 
-      // 1. Auto-Role: Közösségi Tag szerepkör automatikus kiosztása (emoji nélkül)
+      // A) Ha BOT csatlakozik: Automatikus bot szerepkörök kiosztása
+      if (member.user.bot) {
+        const botRole = member.guild.roles.cache.find((r) => r.name === 'Botok');
+        if (botRole) {
+          await member.roles.add(botRole, 'Automatikus Bot szerepkör kiosztása');
+        }
+
+        const botUsername = member.user.username.toLowerCase();
+        let specificRoleName: string | null = null;
+        if (botUsername.includes('jockie') || botUsername.includes('music')) specificRoleName = 'Zene Bot';
+        else if (botUsername.includes('amari')) specificRoleName = 'AmariBot';
+        else if (botUsername.includes('sapphire')) specificRoleName = 'Sapphire';
+        else if (botUsername.includes('wick') || botUsername.includes('beemo')) specificRoleName = 'Wick Védelem';
+        else if (botUsername.includes('esmbot')) specificRoleName = 'esmBot';
+
+        if (specificRoleName) {
+          const specificRole = member.guild.roles.cache.find((r) => r.name === specificRoleName);
+          if (specificRole) {
+            await member.roles.add(specificRole, `Automatikus specifikus bot szerepkör: ${specificRoleName}`);
+          }
+        }
+
+        console.log(`  🤖 Bot konfigurálva: ${member.user.tag} (${specificRoleName || 'Általános Bot'})`);
+        return;
+      }
+
+      // B) Ha FELHASZNÁLÓ csatlakozik: Közösségi Tag szerepkör kiosztása és üdvözlés
       const defaultRole = member.guild.roles.cache.find((r) => r.name === 'Közösségi Tag');
       if (defaultRole) {
         await member.roles.add(defaultRole, 'Automatikus kezdő szerepkör új tagoknak');
         console.log(`  ✓ "Közösségi Tag" szerepkör sikeresen hozzárendelve: ${member.user.tag}`);
       }
 
-      // 2. Automatikus üdvözlés a közösségi társalgóban
       const generalChannel = member.guild.channels.cache.find(
         (c) => c.isTextBased() && c.name.includes('általános-társalgó')
       ) as TextChannel | undefined;
+
+      const authChannel = member.guild.channels.cache.find(
+        (c) => c.isTextBased() && c.name.includes('hitelesítés')
+      );
 
       const roleChannel = member.guild.channels.cache.find(
         (c) => c.isTextBased() && c.name.includes('szerepkör-választó')
@@ -123,10 +158,12 @@ async function startBot() {
           .setColor(Colors.Green)
           .setDescription(
             `Nagyon örülünk, hogy csatlakoztál a hazai fejlesztői ökoszisztéma platformjához!\n\n` +
-            `✅ Automatikusan megkaptad a **Közösségi Tag** szerepkört.\n\n` +
-            (roleChannel
-              ? `🎯 **Első lépés:** Ugorj be a <#${roleChannel.id}> szobába és válaszd ki, milyen technológiák és területek érdekelnek a legjobban!\n\n`
+            (authChannel
+              ? `🔐 **Hitelesítés:** Látogass el a <#${authChannel.id}> szobába a tagságod megerősítéséhez és a bot-védelem feloldásához!\n`
               : '') +
+            (roleChannel
+              ? `🎯 **Szakterületek:** Válaszd ki a technológiáidat a <#${roleChannel.id}> szobában!\n\n`
+              : '\n') +
             `💬 Köszönj be bátran, mutasd be magad vagy oszd meg a legújabb fejlesztésedet!`
           )
           .setThumbnail(member.user.displayAvatarURL())
@@ -144,10 +181,135 @@ async function startBot() {
   });
 
   // =========================================================================
-  // INTERAKCIÓK: Slash parancsok, Dropdown menük és Gombok kezelése
+  // INTERAKCIÓK: Gombok, Menük és Slash Parancsok
   // =========================================================================
   client.on('interactionCreate', async (interaction) => {
-    // 1. Szerepkör választó dropdown menü interakció
+    // 1. GOMB INTERAKCIÓK: Hitelesítés, GitHub Info, Szerepkör Törlés/Ellenőrzés
+    if (interaction.isButton()) {
+      if (!interaction.guild || !interaction.member) return;
+
+      // A) Tag Hitelesítése (Member Verification Button)
+      if (interaction.customId === 'verify_member_button') {
+        try {
+          const guildRoles = await interaction.guild.roles.fetch();
+          const verifiedRole = guildRoles.find((r) => r.name === 'Hitelesített Tag');
+          const defaultRole = guildRoles.find((r) => r.name === 'Közösségi Tag');
+          const member = await interaction.guild.members.fetch(interaction.user.id);
+
+          if (verifiedRole) {
+            await member.roles.add(verifiedRole, 'Sikeres tagi hitelesítés');
+          }
+          if (defaultRole && !member.roles.cache.has(defaultRole.id)) {
+            await member.roles.add(defaultRole, 'Közösségi Tag szerepkör');
+          }
+
+          // Audit napló értesítés
+          const auditChannel = interaction.guild.channels.cache.find(
+            (c) => c.isTextBased() && c.name.includes('audit-napló')
+          ) as TextChannel | undefined;
+
+          if (auditChannel) {
+            const auditEmbed = new EmbedBuilder()
+              .setTitle('🔐 Sikeres Tag Hitelesítés')
+              .setDescription(`**Tag:** <@${member.id}> (${member.user.tag})\n**Időpont:** <t:${Math.floor(Date.now() / 1000)}:R>`)
+              .setColor(Colors.Green)
+              .setTimestamp();
+            await auditChannel.send({ embeds: [auditEmbed] });
+          }
+
+          await interaction.reply({
+            content:
+              '✅ **Sikeresen hitelesítetted magad!**\n\n' +
+              'Megkaptad a **Hitelesített Tag** szerepkört. Mostantól teljes hozzáférésed van az összes beszélgetési csatornához és fórumhoz.\n\n' +
+              '💡 *Tipp: Ha GitHub profilodat is szeretnéd összekapcsolni, használd a `/hitelesites github:<felhasznaloneved>` parancsot!*',
+            ephemeral: true
+          });
+        } catch (err: any) {
+          console.error('Hiba a hitelesítés gomb megnyomásakor:', err.message);
+          await interaction.reply({
+            content: `⚠️ Hiba történt a hitelesítés során: ${err.message}`,
+            ephemeral: true
+          });
+        }
+        return;
+      }
+
+      // B) GitHub Hitelesítés Info Gomb
+      if (interaction.customId === 'github_auth_info_button') {
+        const infoEmbed = new EmbedBuilder()
+          .setTitle('🐙 GitHub Fejlesztői Hitelesítés Útmutató')
+          .setColor(Colors.Blue)
+          .setDescription(
+            'A StrataHu közösségben összekapcsolhatod a Discord fiókodat a GitHub profiloddal.\n\n' +
+            '🚀 **Hogyan működik?**\n' +
+            '1. Írd be a parancssorba: `/hitelesites github:<felhasznaloneved>`\n' +
+            '2. A bot lekérdezi a nyilvános profilodat (repók száma, követők, biográfia).\n' +
+            '3. Automatikusan megkapod a **Hitelesített Fejlesztő** rangot!\n' +
+            '4. Ha valamelyik repód szerepel a StrataHu 1 000 hazai projektje között, automatikusan megkapod a **Kiemelt Fejlesztő** vagy **Nyílt Forráskódú Alkotó** rangot is!'
+          );
+
+        await interaction.reply({
+          embeds: [infoEmbed],
+          ephemeral: true
+        });
+        return;
+      }
+
+      // C) Szerepkörök törlése
+      if (interaction.customId === 'clear_developer_roles') {
+        try {
+          const guildRoles = await interaction.guild.roles.fetch();
+          const member = await interaction.guild.members.fetch(interaction.user.id);
+
+          const removed: string[] = [];
+          for (const spec of INTEREST_ROLES) {
+            const role = guildRoles.find((r) => r.name === spec.name);
+            if (role && member.roles.cache.has(role.id)) {
+              await member.roles.remove(role, 'Szerepkörök törlése gomb');
+              removed.push(spec.name);
+            }
+          }
+
+          await interaction.reply({
+            content:
+              removed.length > 0
+                ? `🧹 Sikeresen eltávolítottad az összes választott szakterületi szerepkört:\n${removed.map((r) => `• ~~${r}~~`).join('\n')}`
+                : 'ℹ️ Jelenleg nem rendelkezel egyetlen törölhető szakterületi szerepkörrel sem.',
+            ephemeral: true
+          });
+        } catch (err: any) {
+          await interaction.reply({
+            content: `⚠️ Hiba történt: ${err.message}`,
+            ephemeral: true
+          });
+        }
+        return;
+      }
+
+      // D) Saját szerepkörök megtekintése
+      if (interaction.customId === 'check_my_roles') {
+        try {
+          const member = await interaction.guild.members.fetch(interaction.user.id);
+          const currentRoles = member.roles.cache
+            .filter((r) => r.name !== '@everyone')
+            .map((r) => `• **${r.name}**`)
+            .join('\n');
+
+          await interaction.reply({
+            content: `👤 **Jelenlegi szerepköreid a StrataHu szerveren:**\n\n${currentRoles || '*Nincs kiosztott szerepköröd.*'}`,
+            ephemeral: true
+          });
+        } catch (err: any) {
+          await interaction.reply({
+            content: `⚠️ Hiba történt: ${err.message}`,
+            ephemeral: true
+          });
+        }
+        return;
+      }
+    }
+
+    // 2. SZEREPKÖR VÁLASZTÓ DROPDOWN MENÜ
     if (interaction.isStringSelectMenu() && interaction.customId === 'select_developer_roles') {
       if (!interaction.guild || !interaction.member) return;
 
@@ -203,67 +365,122 @@ async function startBot() {
       return;
     }
 
-    // 2. Gomb interakciók (Visszaállítás és Saját szerepkörök ellenőrzése)
-    if (interaction.isButton()) {
-      if (!interaction.guild || !interaction.member) return;
-
-      if (interaction.customId === 'clear_developer_roles') {
-        try {
-          const guildRoles = await interaction.guild.roles.fetch();
-          const member = await interaction.guild.members.fetch(interaction.user.id);
-
-          const removed: string[] = [];
-          for (const spec of INTEREST_ROLES) {
-            const role = guildRoles.find((r) => r.name === spec.name);
-            if (role && member.roles.cache.has(role.id)) {
-              await member.roles.remove(role, 'Szerepkörök törlése gomb');
-              removed.push(spec.name);
-            }
-          }
-
-          await interaction.reply({
-            content:
-              removed.length > 0
-                ? `🧹 Sikeresen eltávolítottad az összes választott szakterületi szerepkört:\n${removed.map((r) => `• ~~${r}~~`).join('\n')}`
-                : 'ℹ️ Jelenleg nem rendelkezel egyetlen törölhető szakterületi szerepkörrel sem.',
-            ephemeral: true
-          });
-        } catch (err: any) {
-          await interaction.reply({
-            content: `⚠️ Hiba történt: ${err.message}`,
-            ephemeral: true
-          });
-        }
-        return;
-      }
-
-      if (interaction.customId === 'check_my_roles') {
-        try {
-          const member = await interaction.guild.members.fetch(interaction.user.id);
-          const currentRoles = member.roles.cache
-            .filter((r) => r.name !== '@everyone')
-            .map((r) => `• **${r.name}**`)
-            .join('\n');
-
-          await interaction.reply({
-            content: `👤 **Jelenlegi szerepköreid a StrataHu szerveren:**\n\n${currentRoles || '*Nincs kiosztott szerepköröd.*'}`,
-            ephemeral: true
-          });
-        } catch (err: any) {
-          await interaction.reply({
-            content: `⚠️ Hiba történt: ${err.message}`,
-            ephemeral: true
-          });
-        }
-        return;
-      }
-    }
-
-    // 3. Slash Parancsok
+    // 3. SLASH PARANCSOK
     if (!interaction.isChatInputCommand()) return;
 
     const { commandName } = interaction;
     const projects = getCatalogProjects();
+
+    // /hitelesites github:<felhasznalo>
+    if (commandName === 'hitelesites') {
+      const githubUsername = interaction.options.getString('github', true).trim();
+      await interaction.deferReply({ ephemeral: true });
+
+      try {
+        const res = await fetch(`https://api.github.com/users/${encodeURIComponent(githubUsername)}`, {
+          headers: {
+            'User-Agent': 'StrataHu-Discord-Bot',
+            Accept: 'application/vnd.github.v3+json'
+          }
+        });
+
+        if (res.status === 404) {
+          await interaction.editReply({
+            content: `❌ Nem található GitHub profil ezzel a felhasználónévvel: **${githubUsername}**.\nKérlek ellenőrizd az írásmódot!`
+          });
+          return;
+        }
+
+        if (!res.ok) {
+          throw new Error(`GitHub API válasz státuszkód: ${res.status}`);
+        }
+
+        const ghUser = await res.json();
+        const guildRoles = await interaction.guild!.roles.fetch();
+        const member = await interaction.guild!.members.fetch(interaction.user.id);
+
+        // Szerepkörök kiosztása
+        const devRole = guildRoles.find((r) => r.name === 'Hitelesített Fejlesztő');
+        if (devRole && !member.roles.cache.has(devRole.id)) {
+          await member.roles.add(devRole, `GitHub fiók hitelesítve: ${ghUser.login}`);
+        }
+
+        // Ellenőrizzük, hogy a készítőnek van-e projektje a StrataHu katalógusban
+        const userProjects = projects.filter(
+          (p: any) =>
+            (p.authorHandle && p.authorHandle.toLowerCase().includes(ghUser.login.toLowerCase())) ||
+            (p.repositoryUrl && p.repositoryUrl.toLowerCase().includes(`github.com/${ghUser.login.toLowerCase()}`))
+        );
+
+        let specialRoleGiven: string | null = null;
+        if (userProjects.length > 0) {
+          const featuredRole = guildRoles.find((r) => r.name === 'Kiemelt Fejlesztő') ||
+                               guildRoles.find((r) => r.name === 'Nyílt Forráskódú Alkotó');
+          if (featuredRole && !member.roles.cache.has(featuredRole.id)) {
+            await member.roles.add(featuredRole, `StrataHu katalógus projekt alkotó: ${userProjects[0].name}`);
+            specialRoleGiven = featuredRole.name;
+          }
+        }
+
+        const embed = new EmbedBuilder()
+          .setTitle(`🐙 Sikeres GitHub Hitelesítés: @${ghUser.login}`)
+          .setColor(Colors.Green)
+          .setThumbnail(ghUser.avatar_url)
+          .setDescription(
+            `A Discord fiókodat sikeresen összekapcsoltuk a **[${ghUser.login}](${ghUser.html_url})** GitHub profillal!\n\n` +
+            `✅ Megkaptad a **Hitelesített Fejlesztő** szerepkört.\n` +
+            (specialRoleGiven
+              ? `🏆 **Gratulálunk!** A projekted szerepel a StrataHu katalógusban, ezért megkaptad a **${specialRoleGiven}** rangot is!\n`
+              : '')
+          )
+          .addFields(
+            { name: 'Név', value: ghUser.name || 'Nem megadott', inline: true },
+            { name: 'Nyilvános Repók', value: `${ghUser.public_repos || 0} db`, inline: true },
+            { name: 'Követők', value: `${ghUser.followers || 0} fő`, inline: true },
+            {
+              name: 'Kapcsolódó StrataHu Projektek',
+              value:
+                userProjects.length > 0
+                  ? userProjects.map((p: any) => `• **${p.name}** (${p.category || 'Projekt'})`).join('\n')
+                  : '*Még nincs regisztrált projekted a katalógusban. Küldd be a `/uj-bekuldes` paranccsal!*',
+              inline: false
+            }
+          )
+          .setFooter({ text: 'StrataHu Fejlesztői Hitelesítés • stratahu.dev' })
+          .setTimestamp();
+
+        const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+          new ButtonBuilder()
+            .setLabel('GitHub Profil Megnyitása')
+            .setStyle(ButtonStyle.Link)
+            .setURL(ghUser.html_url)
+        );
+
+        await interaction.editReply({
+          embeds: [embed],
+          components: [row]
+        });
+
+        // Üdvözlés és elismerés az általános társalgóban, ha katalógus projekt alkotója
+        if (userProjects.length > 0) {
+          const generalChannel = interaction.guild!.channels.cache.find(
+            (c) => c.isTextBased() && c.name.includes('általános-társalgó')
+          ) as TextChannel | undefined;
+
+          if (generalChannel) {
+            await generalChannel.send(
+              `🎉 Gratulálunk <@${member.id}> fejlesztőnek, aki most hitelesítette magát mint a(z) **${userProjects[0].name}** készítője! Megkapta a **${specialRoleGiven || 'Hitelesített Fejlesztő'}** rangot!`
+            );
+          }
+        }
+      } catch (err: any) {
+        console.error('Hiba a GitHub hitelesítés során:', err.message);
+        await interaction.editReply({
+          content: `⚠️ Hiba történt a GitHub fiók ellenőrzése során: ${err.message}`
+        });
+      }
+      return;
+    }
 
     if (commandName === 'ping') {
       const ping = Math.round(client.ws.ping);
@@ -289,22 +506,28 @@ async function startBot() {
         .setColor(Colors.Indigo)
         .setDescription(
           'A StrataHu AI Bot a magyar fejlesztői közösség hivatalos asszisztense. ' +
-          'Kereshetsz projekteket, megnézheted a ranglistát, vagy testreszabhatod a szerepköreidet.'
+          'Kereshetsz projekteket, megnézheted a ranglistát, hitelesítheted a profilodat, vagy testreszabhatod a szerepköreidet.'
         )
         .addFields(
           {
             name: '🤖 Elérhető parancsok',
             value:
+              '• `/hitelesites github:<név>` — Profil összekapcsolása GitHub fiókkal\n' +
+              '• `/szerepkorok` — Szakterületek és érdeklődési körök beállítása\n' +
               '• `/projekt nev:<keresés>` — Magyar fejlesztés részleteinek lekérése\n' +
               '• `/top10` — A 10 legkiemelkedőbb hazai projekt ranglistája\n' +
-              '• `/szerepkorok` — Szakterületek és érdeklődési körök beállítása\n' +
               '• `/uj-bekuldes` — Útmutató saját projekt beküldéséhez a katalógusba\n' +
               '• `/ping` — Kapcsolat és válaszidő ellenőrzése'
           },
           {
-            name: '🎭 Szerepkör-választó szoba',
+            name: '🔐 Hitelesítés & Védelem',
             value:
-              'Látogass el a `#🎭・szerepkör-választó` csatornába, ahol az állandó interaktív menüben bármikor bejelölheted a technológiáidat!'
+              'Látogass el a `#🔐・hitelesítés` szobába, ahol egyetlen kattintással megerősítheted a tagságodat!'
+          },
+          {
+            name: '🤖 Külső Botok (Zene, Amari, Sapphire, Wick, esmBot)',
+            value:
+              'A `#🤖・bot-útmutató` szobában megtalálod a szerveren működő ajánlott közösségi botok leírását és 1-kattintásos meghívóit.'
           },
           {
             name: '🌐 Weboldal & Katalógus',
@@ -402,7 +625,7 @@ async function startBot() {
           '1. Látogass el a **http://localhost:3000** (stratahu.dev) felületére.\n' +
           '2. Kattints az **„Új projekt beküldése”** gombra.\n' +
           '3. Add meg a projekt nevét, GitHub repóját, leírását és a technológiákat.\n\n' +
-          'A beküldött projektek azonnal bekerülnek a katalógusba és közzétételre kerülnek a `#🔥・új-projektek` csatornában!'
+          'A beküldött projektek azonnal bekerülnek a katalógusba és közzétételre kerülnek a `#🔥・új-projektek` csatornában és a fórumokban!'
         );
 
       await interaction.reply({ embeds: [embed], ephemeral: true });
@@ -415,8 +638,10 @@ async function startBot() {
 
     if (client.user && message.mentions.has(client.user)) {
       await message.reply(
-        'Szia! 👋 A **StrataHu AI Közösségi Asszisztens** vagyok. Segítek eligazodni a hazai projektek között!\n' +
-        'Használd a `/szerepkorok` parancsot a szakterületeid beállításához, a `/projekt` parancsot kereséshez, vagy a `/segitseg` parancsot a további részletekért.'
+        'Szia! 👋 A **StrataHu AI Közösségi Asszisztens** vagyok.\n' +
+        '• Hitelesítsd a tagságodat a `#🔐・hitelesítés` szobában, vagy kösd össze a GitHub fiókodat a `/hitelesites` paranccsal!\n' +
+        '• Állítsd be a szakterületeidet a `/szerepkorok` paranccsal!\n' +
+        '• Fedezd fel a szerver botjait a `#🤖・bot-útmutató` szobában!'
       );
     }
   });
