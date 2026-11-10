@@ -198,7 +198,9 @@ export function createVerificationPayload() {
       '1. Kattints az alábbi **„🔐 Tagság megerősítése”** gombra az azonnali ellenőrzéshez!\n' +
       '2. Ha hitelesítve vagy, azonnal megkapod a **Hitelesített Tag** szerepkört.\n\n' +
       '🐙 **GitHub Fejlesztői Hitelesítés:**\n' +
-      'Ha rendelkezel GitHub profillal, a `/hitelesites github:<felhasznalonev>` paranccsal összekapcsolhatod a fiókodat és megkaphatod a **Hitelesített Fejlesztő** rangot!'
+      'Ha rendelkezel GitHub profillal, a `/hitelesites github:<felhasznalonev>` paranccsal összekapcsolhatod a fiókodat és megkaphatod a **Hitelesített Fejlesztő** rangot!\n\n' +
+      '🌐 **Webes Fiók Létrehozása (Önkiszolgáló szerkesztés & eltávolítás):**\n' +
+      'Hitelesített Fejlesztőként kattints a **„🔑 Webes Fiók Kód”** gombra vagy írd be a `/fiok` parancsot az egyszer használatos regisztrációs kódért!'
     )
     .addFields(
       {
@@ -218,7 +220,11 @@ export function createVerificationPayload() {
     new ButtonBuilder()
       .setCustomId('github_auth_info_button')
       .setLabel('🐙 GitHub Hitelesítés Info')
-      .setStyle(ButtonStyle.Primary)
+      .setStyle(ButtonStyle.Primary),
+    new ButtonBuilder()
+      .setCustomId('generate_web_auth_code')
+      .setLabel('🔑 Webes Fiók Kód')
+      .setStyle(ButtonStyle.Secondary)
   );
 
   return {

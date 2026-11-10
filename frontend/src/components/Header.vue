@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { DeveloperProfile } from '../services/api';
+
 export type ActiveViewMode = 'explore' | 'tierlist' | 'top10' | 'incubator';
 
 const props = defineProps<{
@@ -6,6 +8,9 @@ const props = defineProps<{
   totalProjects: number;
   searchQuery: string;
   showStickySearch?: boolean;
+  currentUser?: DeveloperProfile | null;
+  ownedProjectsCount?: number;
+  onlyMineActive?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -13,6 +18,9 @@ const emit = defineEmits<{
   'update:searchQuery': [query: string];
   openSubmitModal: [];
   jumpToCollections: [];
+  openAuthModal: [initialMode?: 'login' | 'register'];
+  toggleOnlyMine: [];
+  logout: [];
 }>();
 
 const navItems: Array<{ id: ActiveViewMode; label: string }> = [
@@ -127,8 +135,40 @@ const navItems: Array<{ id: ActiveViewMode; label: string }> = [
           </nav>
         </div>
 
-        <!-- Primary Orange HubSpot-Style CTA -->
-        <div class="flex items-center gap-3">
+        <!-- Developer Auth + Primary Orange HubSpot-Style CTA -->
+        <div class="flex flex-wrap items-center gap-2.5">
+          <template v-if="currentUser">
+            <button
+              type="button"
+              class="inline-flex min-h-[40px] cursor-pointer items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors"
+              :class="
+                onlyMineActive
+                  ? 'border-[#00565b] bg-[#00565b] text-white'
+                  : 'border-[#7c98b6] bg-[#f8fafc] text-[#213343] hover:border-[#00565b] hover:text-[#00565b]'
+              "
+              @click="emit('toggleOnlyMine')"
+            >
+              <span class="h-2 w-2 rounded-full bg-emerald-400" aria-hidden="true"></span>
+              <span>@{{ currentUser.githubHandle || currentUser.discordUsername }}</span>
+              <span class="opacity-85">({{ ownedProjectsCount ?? 0 }})</span>
+            </button>
+            <button
+              type="button"
+              class="min-h-[40px] cursor-pointer rounded-full border border-[#cbd6e2] bg-white px-3.5 py-1.5 text-xs font-semibold text-[#516f90] transition-colors hover:border-rose-300 hover:text-rose-700"
+              @click="emit('logout')"
+            >
+              Kilépés
+            </button>
+          </template>
+          <button
+            v-else
+            type="button"
+            class="inline-flex min-h-[42px] cursor-pointer items-center gap-1.5 rounded-full border border-[#7c98b6] bg-white px-4 py-2 text-sm font-semibold text-[#213343] transition-colors hover:border-[#00565b] hover:bg-[#f5f8fa] hover:text-[#00565b] active:scale-[0.98]"
+            @click="emit('openAuthModal', 'login')"
+          >
+            <span>Bejelentkezés</span>
+          </button>
+
           <button
             type="button"
             class="inline-flex min-h-[42px] cursor-pointer items-center gap-2 rounded-full bg-[#d93b00] px-5 py-2 text-sm font-semibold text-white shadow-xs transition-all hover:bg-[#b83200] active:scale-[0.98]"
@@ -184,13 +224,33 @@ const navItems: Array<{ id: ActiveViewMode; label: string }> = [
           </span>
         </div>
 
-        <button
-          type="button"
-          class="hidden min-h-[40px] shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-[#d93b00] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#b83200] active:scale-[0.98] sm:inline-flex"
-          @click="emit('openSubmitModal')"
-        >
-          <span>+ Beküldés</span>
-        </button>
+        <div class="flex shrink-0 items-center gap-2">
+          <button
+            v-if="currentUser"
+            type="button"
+            class="hidden min-h-[40px] cursor-pointer items-center gap-1.5 rounded-full border border-[#7c98b6] bg-white px-3.5 py-1.5 text-xs font-semibold text-[#213343] hover:border-[#00565b] md:inline-flex"
+            @click="emit('toggleOnlyMine')"
+          >
+            <span class="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true"></span>
+            <span>@{{ currentUser.githubHandle || currentUser.discordUsername }}</span>
+          </button>
+          <button
+            v-else
+            type="button"
+            class="hidden min-h-[40px] cursor-pointer items-center rounded-full border border-[#7c98b6] bg-white px-3.5 py-1.5 text-xs font-semibold text-[#213343] hover:border-[#00565b] md:inline-flex"
+            @click="emit('openAuthModal', 'login')"
+          >
+            Belépés
+          </button>
+
+          <button
+            type="button"
+            class="hidden min-h-[40px] shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-[#d93b00] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#b83200] active:scale-[0.98] sm:inline-flex"
+            @click="emit('openSubmitModal')"
+          >
+            <span>+ Beküldés</span>
+          </button>
+        </div>
       </div>
     </div>
   </header>

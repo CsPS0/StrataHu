@@ -17,7 +17,60 @@ export interface ProjectRecord {
   techStack: string[];
   repositoryUrl: string;
   liveDemoUrl?: string | null;
+  ownerUserId?: string | null;
+  ownerDiscordId?: string | null;
   createdAtUtc: string;
+  updatedAtUtc?: string | null;
+}
+
+export interface DeveloperProfile {
+  id: string;
+  email: string;
+  discordUserId: string;
+  discordUsername: string;
+  githubHandle: string;
+  displayName: string;
+  avatarUrl?: string | null;
+  verifiedRoles: string[];
+  createdAtUtc: string;
+}
+
+export interface AuthSessionResponse {
+  token: string;
+  developer: DeveloperProfile;
+}
+
+export interface RequestCodePayload {
+  discordUsername: string;
+  purpose?: 'register' | 'reset';
+}
+
+export interface RegisterPayload {
+  verificationCode: string;
+  email: string;
+  password: string;
+  displayName?: string;
+}
+
+export interface LoginPayload {
+  identifier: string;
+  password: string;
+}
+
+export interface ResetPasswordPayload {
+  verificationCode: string;
+  newPassword: string;
+}
+
+export interface UpdateProjectPayload {
+  name: string;
+  description: string;
+  longDescription?: string | null;
+  category?: string;
+  imageUrl?: string | null;
+  techStack: string[];
+  repositoryUrl: string;
+  liveDemoUrl?: string | null;
 }
 
 export interface SubmissionPayload {
@@ -69,6 +122,81 @@ export const TAKEDOWN_CONTACT_EMAIL =
   import.meta.env.VITE_TAKEDOWN_EMAIL || 'moderation@stratahu.dev';
 
 const FALLBACK_STORAGE_KEY = 'stratahu_fallback_projects_v6';
+const AUTH_TOKEN_KEY = 'stratahu_auth_token_v1';
+const AUTH_USER_KEY = 'stratahu_auth_user_v1';
+
+export function getStoredToken(): string | null {
+  try {
+    return localStorage.getItem(AUTH_TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function getStoredDeveloper(): DeveloperProfile | null {
+  try {
+    const raw = localStorage.getItem(AUTH_USER_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as DeveloperProfile;
+  } catch {
+    return null;
+  }
+}
+
+export function saveAuthSession(session: AuthSessionResponse): void {
+  try {
+    localStorage.setItem(AUTH_TOKEN_KEY, session.token);
+    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(session.developer));
+  } catch {
+    // Ignore storage errors
+  }
+}
+
+export function clearAuthSession(): void {
+  try {
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    localStorage.removeItem(AUTH_USER_KEY);
+  } catch {
+    // Ignore storage errors
+  }
+}
+
+function getAuthHeaders(): Record<string, string> {
+  const token = getStoredToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+function extractGithubRepoOwner(repoUrl?: string | null): string | null {
+  if (!repoUrl) return null;
+  try {
+    const parsed = new URL(repoUrl);
+    if (!parsed.hostname.toLowerCase().endsWith('github.com')) return null;
+    const parts = parsed.pathname.split('/').filter(Boolean);
+    return parts.length >= 2 ? parts[0].toLowerCase() : null;
+  } catch {
+    return null;
+  }
+}
+
+export function canManageProject(
+  user: DeveloperProfile | null | undefined,
+  project: Pick<ProjectRecord, 'ownerUserId' | 'ownerDiscordId' | 'authorHandle' | 'repositoryUrl'> | null | undefined
+): boolean {
+  if (!user || !project) return false;
+  if (project.ownerUserId && project.ownerUserId === user.id) return true;
+  if (project.ownerDiscordId && project.ownerDiscordId === user.discordUserId) return true;
+
+  const cleanAuthor = project.authorHandle.trim().replace(/^@+/, '').toLowerCase();
+  const gh = user.githubHandle.trim().replace(/^@+/, '').toLowerCase();
+  const disc = user.discordUsername.trim().replace(/^@+/, '').toLowerCase();
+
+  if (cleanAuthor.length >= 2 && (cleanAuthor === gh || (disc.length >= 2 && cleanAuthor === disc))) {
+    return true;
+  }
+
+  const repoOwner = extractGithubRepoOwner(project.repositoryUrl);
+  return Boolean(gh.length >= 2 && repoOwner && repoOwner === gh);
+}
 
 /**
  * Resolves the real screenshot or Discord OpenGraph embed header image for a project.
@@ -198,7 +326,8 @@ export async function submitProject(payload: SubmissionPayload): Promise<Project
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Accept: 'application/json'
+        Accept: 'application/json',
+        ...getAuthHeaders()
       },
       body: JSON.stringify(payload)
     });
@@ -213,6 +342,7 @@ export async function submitProject(payload: SubmissionPayload): Promise<Project
       throw err;
     }
 
+    const storedUser = getStoredDeveloper();
     const normalizedHandle = payload.authorHandle.trim().startsWith('@')
       ? payload.authorHandle.trim()
       : `@${payload.authorHandle.trim()}`;
@@ -230,6 +360,8 @@ export async function submitProject(payload: SubmissionPayload): Promise<Project
       techStack: payload.techStack,
       repositoryUrl: payload.repositoryUrl.trim(),
       liveDemoUrl: payload.liveDemoUrl?.trim() || null,
+      ownerUserId: storedUser?.id || null,
+      ownerDiscordId: storedUser?.discordUserId || null,
       createdAtUtc: new Date().toISOString()
     };
 
@@ -237,6 +369,162 @@ export async function submitProject(payload: SubmissionPayload): Promise<Project
     saveLocalFallbackProjects([created, ...existing]);
     return created;
   }
+}
+
+export async function requestDiscordVerificationCode(
+  payload: RequestCodePayload
+): Promise<{ sent: boolean; discordUsername: string; githubHandle: string; message: string }> {
+  const response = await fetch(`${API_BASE_URL}/api/auth/request-code`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    throw await parseErrorResponse(response);
+  }
+
+  return (await response.json()) as {
+    sent: boolean;
+    discordUsername: string;
+    githubHandle: string;
+    message: string;
+  };
+}
+
+export async function registerCertifiedDeveloper(payload: RegisterPayload): Promise<AuthSessionResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    throw await parseErrorResponse(response);
+  }
+
+  const session = (await response.json()) as AuthSessionResponse;
+  saveAuthSession(session);
+  return session;
+}
+
+export async function loginDeveloper(payload: LoginPayload): Promise<AuthSessionResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    throw await parseErrorResponse(response);
+  }
+
+  const session = (await response.json()) as AuthSessionResponse;
+  saveAuthSession(session);
+  return session;
+}
+
+export async function resetDeveloperPassword(payload: ResetPasswordPayload): Promise<AuthSessionResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/auth/reset-password`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    throw await parseErrorResponse(response);
+  }
+
+  const session = (await response.json()) as AuthSessionResponse;
+  saveAuthSession(session);
+  return session;
+}
+
+export async function fetchCurrentDeveloper(): Promise<DeveloperProfile | null> {
+  const token = getStoredToken();
+  if (!token) return null;
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (response.status === 401 || response.status === 403) {
+      clearAuthSession();
+      return null;
+    }
+
+    if (!response.ok) {
+      return getStoredDeveloper();
+    }
+
+    const body = (await response.json()) as { developer: DeveloperProfile };
+    saveAuthSession({ token, developer: body.developer });
+    return body.developer;
+  } catch {
+    return getStoredDeveloper();
+  }
+}
+
+export async function updateProject(
+  projectId: string,
+  payload: UpdateProjectPayload
+): Promise<ProjectRecord> {
+  const response = await fetch(`${API_BASE_URL}/api/projects/${encodeURIComponent(projectId)}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      ...getAuthHeaders()
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    throw await parseErrorResponse(response);
+  }
+
+  return (await response.json()) as ProjectRecord;
+}
+
+export async function autoTakedownProject(
+  projectId: string,
+  reason?: string
+): Promise<TakedownResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/projects/${encodeURIComponent(projectId)}/auto-takedown`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        ...getAuthHeaders()
+      },
+      body: JSON.stringify({ reason: reason || '' })
+    }
+  );
+
+  if (!response.ok) {
+    throw await parseErrorResponse(response);
+  }
+
+  return (await response.json()) as TakedownResponse;
 }
 
 export async function submitTakedownNotice(

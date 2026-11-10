@@ -72,6 +72,7 @@ pgdata/
 *.db
 *.sqlite
 *.sqlite3
+discord-bot/data/
 
 # ============================================================================
 # OS Generated Files

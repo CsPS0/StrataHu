@@ -7,6 +7,8 @@ import {
   EmbedBuilder,
   ForumChannel,
   GatewayIntentBits,
+  type Guild,
+  type GuildMember,
   ModalBuilder,
   PermissionFlagsBits,
   REST,
@@ -24,6 +26,13 @@ import {
   loadCatalogProjects as getCatalogProjects,
   pickRandomShowcaseProject
 } from './project-embeds';
+import { startApiServer } from './api-server';
+import { listActiveProjects, upsertDiscordCertification } from './database';
+import {
+  getMemberCertifiedRoles,
+  issueDiscordCodeForMember,
+  verifyGithubUser
+} from './discord-certification';
 
 const commands = [
   new SlashCommandBuilder()
@@ -31,6 +40,23 @@ const commands = [
     .setDescription('Fejlesztői hitelesítés és profil összekapcsolása GitHub fiókkal')
     .addStringOption((opt) =>
       opt.setName('github').setDescription('A GitHub felhasználóneved (pl. octocat, yourname)').setRequired(true)
+    ),
+  new SlashCommandBuilder()
+    .setName('fiok')
+    .setDescription('Webes fejlesztői fiók aktiváló vagy jelszó-visszaállító kód kérése (Hitelesített Fejlesztőknek)')
+    .addStringOption((opt) =>
+      opt
+        .setName('muvelet')
+        .setDescription('Milyen művelethez kérsz kódot?')
+        .addChoices(
+          { name: 'Új webes fiók létrehozása (Regisztráció)', value: 'register' },
+          { name: 'Elfelejtett jelszó visszaállítása', value: 'reset' }
+        )
+    )
+    .addStringOption((opt) =>
+      opt
+        .setName('github')
+        .setDescription('Opcionális: GitHub felhasználónév frissítése (ha már Hitelesített Fejlesztő vagy)')
     ),
   new SlashCommandBuilder()
     .setName('projekt')
@@ -166,8 +192,74 @@ function buildIncubatorModal(): ModalBuilder {
   return modal;
 }
 
+async function replyWithWebActivationCode(
+  interaction: {
+    guild: Guild;
+    replied: boolean;
+    deferred: boolean;
+    reply: (opts: any) => Promise<any>;
+    editReply: (opts: any) => Promise<any>;
+  },
+  member: GuildMember,
+  purpose: 'register' | 'reset',
+  optionalGithub?: string
+) {
+  const sendSafeReply = (opts: any) =>
+    interaction.deferred || interaction.replied
+      ? interaction.editReply(opts)
+      : interaction.reply({ ...opts, ephemeral: true });
+
+  const certifiedRoles = getMemberCertifiedRoles(member);
+  if (certifiedRoles.length === 0) {
+    await sendSafeReply({
+      content:
+        '🔒 **A webes fejlesztői fiók kizárólag a „Hitelesített Fejlesztő” ranggal rendelkező tagoknak érhető el!**\n\n' +
+        'Futtasd előbb a `/hitelesites github:<felhasznaloneved>` parancsot itt a Discordon, majd kérj újra kódot a `/fiok` paranccsal.'
+    });
+    return;
+  }
+
+  if (optionalGithub && optionalGithub.trim().length > 0) {
+    const ghUser = await verifyGithubUser(optionalGithub.trim());
+    upsertDiscordCertification({
+      discordUserId: member.id,
+      discordUsername: member.user.username,
+      displayName: member.displayName || member.user.globalName || member.user.username,
+      githubHandle: ghUser.login,
+      avatarUrl: member.user.displayAvatarURL({ size: 256 }),
+      roles: certifiedRoles
+    });
+  }
+
+  const issued = await issueDiscordCodeForMember(interaction.guild, member, purpose, false);
+  const title =
+    purpose === 'reset'
+      ? '🔐 Webes Jelszó-visszaállító Kód'
+      : '🌐 Webes Fejlesztői Fiók Aktiváló Kód';
+
+  const codeEmbed = new EmbedBuilder()
+    .setTitle(title)
+    .setColor(0x00565b)
+    .setDescription(
+      `Az alábbi **egyszer használatos** kóddal hozhatod létre vagy állíthatod vissza a fiókodat a **http://localhost:3000** felületen (` +
+      `Bejelentkezés → ${purpose === 'reset' ? 'Elfelejtett jelszó' : 'Regisztráció'}):\n\n` +
+      `# \`${issued.code}\`\n\n` +
+      `• **Hitelesített szerepkörök:** ${issued.cert.roles.join(', ')}\n` +
+      (issued.cert.githubHandle ? `• **Igazolt GitHub:** \`@${issued.cert.githubHandle}\`\n` : '') +
+      `• **Érvényesség:** 15 perc (csak neked látható)`
+    )
+    .setFooter({ text: 'StrataHu Auth • Fiókodhoz automatikusan kapcsolódnak a saját projektjeid' })
+    .setTimestamp();
+
+  await sendSafeReply({ embeds: [codeEmbed] });
+}
+
 async function startBot() {
   const config = getDiscordConfig();
+  let activeGuild: Guild | null = null;
+
+  startApiServer(() => activeGuild);
+
   const client = new Client({
     intents: [
       GatewayIntentBits.Guilds,
@@ -177,7 +269,7 @@ async function startBot() {
     ]
   });
 
-  client.once('ready', async () => {
+  client.once('clientReady', async () => {
     console.log(`🤖 StrataHu Discord Bot aktív: ${client.user?.tag}`);
     await registerCommands(config);
 
@@ -188,6 +280,7 @@ async function startBot() {
         : client.guilds.cache.first();
 
       if (guild) {
+        activeGuild = guild;
         console.log('GitHub repó aktivitás-figyelő elindítva...');
         await checkGitHubUpdates(guild);
         setInterval(() => {
@@ -351,6 +444,30 @@ async function startBot() {
           embeds: [infoEmbed],
           ephemeral: true
         });
+        return;
+      }
+
+      // B2) Webes Fiók Aktiváló Kód Gomb
+      if (interaction.customId === 'generate_web_auth_code') {
+        try {
+          const member = await interaction.guild.members.fetch(interaction.user.id);
+          await replyWithWebActivationCode(
+            {
+              guild: interaction.guild,
+              replied: interaction.replied,
+              deferred: interaction.deferred,
+              reply: (opts) => interaction.reply(opts),
+              editReply: (opts) => interaction.editReply(opts)
+            },
+            member,
+            'register'
+          );
+        } catch (err: any) {
+          await interaction.reply({
+            content: `⚠️ Nem sikerült aktiváló kódot generálni: ${err.message}`,
+            ephemeral: true
+          });
+        }
         return;
       }
 
@@ -631,7 +748,43 @@ async function startBot() {
     if (!interaction.isChatInputCommand()) return;
 
     const { commandName } = interaction;
-    const projects = getCatalogProjects();
+    const dbProjects = listActiveProjects();
+    const projects = dbProjects.length > 0 ? dbProjects : getCatalogProjects();
+
+    // /fiok [muvelet] [github]
+    if (commandName === 'fiok') {
+      if (!interaction.guild) {
+        await interaction.reply({ content: 'Ez a parancs csak a StrataHu Discord szerveren használható.', ephemeral: true });
+        return;
+      }
+      const purposeRaw = interaction.options.getString('muvelet');
+      const purpose: 'register' | 'reset' = purposeRaw === 'reset' ? 'reset' : 'register';
+      const optionalGithub = interaction.options.getString('github') || undefined;
+      await interaction.deferReply({ ephemeral: true });
+
+      try {
+        const member = await interaction.guild.members.fetch(interaction.user.id);
+        await replyWithWebActivationCode(
+          {
+            guild: interaction.guild,
+            replied: interaction.replied,
+            deferred: interaction.deferred,
+            reply: (opts) => interaction.reply(opts),
+            editReply: (opts) => interaction.editReply(opts)
+          },
+          member,
+          purpose,
+          optionalGithub
+        );
+      } catch (err: any) {
+        const msg =
+          typeof err?.message === 'string' && err.message.startsWith('NOT_FOUND:')
+            ? `❌ Nem található ilyen GitHub profil: **${err.message.slice('NOT_FOUND:'.length)}**.`
+            : `⚠️ Hiba történt a kód generálása során: ${err?.message || 'Ismeretlen hiba'}`;
+        await interaction.editReply({ content: msg });
+      }
+      return;
+    }
 
     // /hitelesites github:<felhasznalo>
     if (commandName === 'hitelesites') {
@@ -639,25 +792,18 @@ async function startBot() {
       await interaction.deferReply({ ephemeral: true });
 
       try {
-        const res = await fetch(`https://api.github.com/users/${encodeURIComponent(githubUsername)}`, {
-          headers: {
-            'User-Agent': 'StrataHu-Discord-Bot',
-            Accept: 'application/vnd.github.v3+json'
+        let ghUser: Awaited<ReturnType<typeof verifyGithubUser>>;
+        try {
+          ghUser = await verifyGithubUser(githubUsername);
+        } catch (err: any) {
+          if (typeof err?.message === 'string' && err.message.startsWith('NOT_FOUND:')) {
+            await interaction.editReply({
+              content: `❌ Nem található GitHub profil ezzel a felhasználónévvel: **${githubUsername}**.\nKérlek ellenőrizd az írásmódot!`
+            });
+            return;
           }
-        });
-
-        if (res.status === 404) {
-          await interaction.editReply({
-            content: `❌ Nem található GitHub profil ezzel a felhasználónévvel: **${githubUsername}**.\nKérlek ellenőrizd az írásmódot!`
-          });
-          return;
+          throw err;
         }
-
-        if (!res.ok) {
-          throw new Error(`GitHub API válasz státuszkód: ${res.status}`);
-        }
-
-        const ghUser = await res.json();
         const guildRoles = await interaction.guild!.roles.fetch();
         const member = await interaction.guild!.members.fetch(interaction.user.id);
 
@@ -684,6 +830,16 @@ async function startBot() {
           }
         }
 
+        const refreshedMember = await interaction.guild!.members.fetch(interaction.user.id);
+        upsertDiscordCertification({
+          discordUserId: refreshedMember.id,
+          discordUsername: refreshedMember.user.username,
+          displayName: refreshedMember.displayName || refreshedMember.user.globalName || refreshedMember.user.username,
+          githubHandle: ghUser.login,
+          avatarUrl: refreshedMember.user.displayAvatarURL({ size: 256 }),
+          roles: getMemberCertifiedRoles(refreshedMember)
+        });
+
         const embed = new EmbedBuilder()
           .setTitle(`🐙 Sikeres GitHub Hitelesítés: @${ghUser.login}`)
           .setColor(Colors.Green)
@@ -693,7 +849,8 @@ async function startBot() {
             `✅ Megkaptad a **Hitelesített Fejlesztő** szerepkört.\n` +
             (specialRoleGiven
               ? `🏆 **Gratulálunk!** A projekted szerepel a StrataHu katalógusban, ezért megkaptad a **${specialRoleGiven}** rangot is!\n`
-              : '')
+              : '') +
+            `\n🌐 Mostantól a lenti gombbal (vagy a \`/fiok\` paranccsal) **létrehozhatod a webes fejlesztői fiókodat**, amellyel automatikusan szerkesztheted vagy eltávolíthatod a saját projektjeidet a piactéren!`
           )
           .addFields(
             { name: 'Név', value: ghUser.name || 'Nem megadott', inline: true },
@@ -715,7 +872,11 @@ async function startBot() {
           new ButtonBuilder()
             .setLabel('GitHub Profil Megnyitása')
             .setStyle(ButtonStyle.Link)
-            .setURL(ghUser.html_url)
+            .setURL(ghUser.html_url),
+          new ButtonBuilder()
+            .setCustomId('generate_web_auth_code')
+            .setLabel('🔑 Webes Fiók Aktiváló Kód')
+            .setStyle(ButtonStyle.Success)
         );
 
         await interaction.editReply({
@@ -791,6 +952,7 @@ async function startBot() {
               '• `/alapitas` — Szövetkezet & Egyesület alapítási terv (0 Ft) és alapítótárs jelentkezés\n' +
               '• `/inkubacio` — Projekt inkubációs jelentkezési űrlap (0 Ft előleg, piacra vitel)\n' +
               '• `/hitelesites github:<név>` — Profil összekapcsolása GitHub fiókkal\n' +
+              '• `/fiok` — Webes fejlesztői fiók aktiváló kód generálása (Hitelesített Fejlesztőknek)\n' +
               '• `/szerepkorok` — Szakterületek és érdeklődési körök beállítása\n' +
               '• `/projekt nev:<keresés>` — Magyar fejlesztés részleteinek lekérése\n' +
               '• `/top10` — A 10 legkiemelkedőbb hazai projekt ranglistája\n' +

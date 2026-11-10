@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { ApiError, submitProject, type ProjectRecord } from '../services/api';
+import { ApiError, submitProject, type DeveloperProfile, type ProjectRecord } from '../services/api';
+
+const props = defineProps<{
+  currentUser?: DeveloperProfile | null;
+}>();
 
 const emit = defineEmits<{
   projectCreated: [project: ProjectRecord];
@@ -90,6 +94,15 @@ function resetFormState() {
 function openModal() {
   errorMessage.value = '';
   fieldErrors.value = {};
+  if (props.currentUser) {
+    if (!authorHandle.value.trim()) {
+      const handle = props.currentUser.githubHandle || props.currentUser.discordUsername;
+      authorHandle.value = handle.startsWith('@') ? handle : `@${handle}`;
+    }
+    if (!contactInfo.value.trim()) {
+      contactInfo.value = props.currentUser.email || `Discord: @${props.currentUser.discordUsername}`;
+    }
+  }
   dialogRef.value?.showModal();
 }
 

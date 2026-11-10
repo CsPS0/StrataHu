@@ -11,11 +11,12 @@ const props = defineProps<{
   selectedTags: string[];
   viewMode: 'list' | 'grid';
   priorityLoad?: boolean;
+  isOwner?: boolean;
 }>();
 
 const emit = defineEmits<{
   toggleTag: [tag: string];
-  openDetails: [project: ProjectRecord];
+  openDetails: [project: ProjectRecord, startEditing?: boolean];
 }>();
 
 const imageFailed = ref(false);
@@ -152,6 +153,12 @@ function isTagSelected(tag: string) {
             {{ project.category || 'Szoftver' }}
           </span>
           <span
+            v-if="isOwner"
+            class="inline-flex items-center rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-800"
+          >
+            Saját projekt
+          </span>
+          <span
             v-if="project.liveDemoUrl"
             class="inline-flex items-center rounded-full border border-[#dbe4ed] bg-[#f5f8fa] px-2.5 py-0.5 text-[11px] font-medium text-[#00565b]"
           >
@@ -225,6 +232,15 @@ function isTagSelected(tag: string) {
       </div>
 
       <div class="mt-5 flex w-full flex-col gap-2 sm:flex-row md:flex-wrap md:justify-end">
+        <button
+          v-if="isOwner"
+          type="button"
+          class="inline-flex min-h-[38px] flex-1 cursor-pointer items-center justify-center rounded-full border border-[#00565b] bg-[#f0f7f7] px-3.5 py-2 text-xs font-semibold text-[#00565b] transition-all hover:bg-[#00565b] hover:text-white active:scale-[0.98] md:flex-initial"
+          @click="emit('openDetails', project, true)"
+        >
+          Szerkesztés
+        </button>
+
         <button
           type="button"
           class="inline-flex min-h-[38px] flex-1 cursor-pointer items-center justify-center rounded-full bg-[#00565b] px-4 py-2 text-xs font-semibold text-white transition-all hover:bg-[#004246] active:scale-[0.98] md:flex-initial"
@@ -340,6 +356,12 @@ function isTagSelected(tag: string) {
         <div class="mt-2.5 flex flex-wrap items-center gap-2">
           <span class="inline-flex items-center rounded-full bg-[#6a55fa] px-3 py-0.5 text-[11px] font-semibold text-white">
             {{ project.category || 'Szoftver' }}
+          </span>
+          <span
+            v-if="isOwner"
+            class="inline-flex items-center rounded-full border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-800"
+          >
+            Saját
           </span>
           <span class="text-[11px] font-semibold text-[#00565b]">
             {{ ratingInfo.label }}

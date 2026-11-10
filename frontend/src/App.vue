@@ -5,12 +5,21 @@ import FilterSidebar, { type FacetOption } from './components/FilterSidebar.vue'
 import IncubatorLaunchpad from './components/IncubatorLaunchpad.vue';
 import ProjectCard from './components/ProjectCard.vue';
 import SubmissionModal from './components/SubmissionModal.vue';
+import AuthModal from './components/AuthModal.vue';
 import Footer from './components/Footer.vue';
 import {
+  ApiError,
+  autoTakedownProject,
   buildTakedownMailtoUrl,
+  canManageProject,
+  clearAuthSession,
+  fetchCurrentDeveloper,
   fetchProjects,
+  getStoredDeveloper,
   INITIAL_SHOWCASE_PROJECTS,
   submitTakedownNotice,
+  updateProject,
+  type DeveloperProfile,
   type ProjectRecord,
   type ProjectTier
 } from './services/api';
@@ -34,6 +43,12 @@ const selectedTags = ref<string[]>([]);
 const onlyWithDemo = ref(false);
 const onlyTop10 = ref(false);
 const onlyWithImage = ref(false);
+const onlyMine = ref(false);
+
+const currentUser = ref<DeveloperProfile | null>(getStoredDeveloper());
+const ownedProjectsCount = computed(() =>
+  currentUser.value ? projects.value.filter((p) => canManageProject(currentUser.value, p)).length : 0
+);
 
 const currentPage = ref(1);
 const pageSize = 24;
@@ -47,6 +62,7 @@ let heroObserver: IntersectionObserver | null = null;
 
 // Modals
 const submissionModalRef = ref<InstanceType<typeof SubmissionModal> | null>(null);
+const authModalRef = ref<InstanceType<typeof AuthModal> | null>(null);
 const detailsDialogRef = ref<HTMLDialogElement | null>(null);
 const selectedProject = ref<ProjectRecord | null>(null);
 const activeGalleryImage = ref<string>('');
@@ -55,6 +71,36 @@ const requesterContact = ref('');
 const takedownReason = ref('');
 const isSubmittingTakedown = ref(false);
 const takedownFeedback = ref<{ type: 'success' | 'error'; message: string } | null>(null);
+
+// Certified Developer Owner Controls (Edit & Auto Takedown)
+const canEditSelectedProject = computed(() =>
+  canManageProject(currentUser.value, selectedProject.value)
+);
+const isEditingProject = ref(false);
+const isSavingEdit = ref(false);
+const editErrorMessage = ref('');
+const editCategories = [
+  'Oktatás & e-Kréta',
+  'Parancssor & Fejlesztői eszközök',
+  'Web & Alkotói eszközök',
+  'Infrastruktúra & DevOps',
+  'Mesterséges intelligencia & NLP',
+  'Játék & Klasszikusok'
+];
+const editForm = ref({
+  name: '',
+  category: editCategories[0],
+  description: '',
+  longDescription: '',
+  techStackInput: '',
+  repositoryUrl: '',
+  liveDemoUrl: '',
+  imageUrl: ''
+});
+const showAutoTakedownConfirm = ref(false);
+const autoTakedownReason = ref('');
+const isExecutingAutoTakedown = ref(false);
+const autoTakedownError = ref('');
 
 const categoryFacets = computed<FacetOption[]>(() => {
   const counts = new Map<string, number>();
@@ -93,6 +139,7 @@ const activeFilterCount = computed(() => {
   if (onlyWithDemo.value) count++;
   if (onlyTop10.value) count++;
   if (onlyWithImage.value) count++;
+  if (onlyMine.value) count++;
   if (searchQuery.value.trim().length > 0) count++;
   return count;
 });
@@ -101,6 +148,9 @@ const filteredProjects = computed(() => {
   const query = searchQuery.value.trim().toLowerCase();
 
   const matches = projects.value.filter((project) => {
+    if (onlyMine.value && !canManageProject(currentUser.value, project)) {
+      return false;
+    }
     if (
       selectedCategories.value.length > 0 &&
       !selectedCategories.value.includes(project.category || 'Egyéb')
@@ -171,6 +221,7 @@ watch(
     onlyWithDemo,
     onlyTop10,
     onlyWithImage,
+    onlyMine,
     sortBy
   ],
   () => {
@@ -350,6 +401,7 @@ function handleResetFilters() {
   onlyWithDemo.value = false;
   onlyTop10.value = false;
   onlyWithImage.value = false;
+  onlyMine.value = false;
   currentPage.value = 1;
 }
 
@@ -374,25 +426,75 @@ async function loadDirectory() {
   }
 }
 
+function showToast(msg: string) {
+  toastMessage.value = msg;
+  setTimeout(() => {
+    if (toastMessage.value === msg) {
+      toastMessage.value = null;
+    }
+  }, 6000);
+}
+
 function handleOpenSubmitModal() {
   submissionModalRef.value?.openModal();
 }
 
-function handleProjectCreated(newProject: ProjectRecord) {
-  projects.value = [newProject, ...projects.value];
-  toastMessage.value = `A(z) „${newProject.name}” projekt sikeresen bekerült a piactérre!`;
-  setTimeout(() => {
-    toastMessage.value = null;
-  }, 6000);
+function handleOpenAuthModal(initialMode: 'login' | 'register' = 'login') {
+  authModalRef.value?.openModal(initialMode);
 }
 
-function openProjectDetails(project: ProjectRecord) {
+function handleDeveloperAuthenticated(developer: DeveloperProfile) {
+  currentUser.value = developer;
+  const label = developer.githubHandle ? `@${developer.githubHandle}` : `@${developer.discordUsername}`;
+  showToast(`Sikeres belépés hitelesített fejlesztőként (${label})!`);
+  void loadDirectory();
+}
+
+function handleLogout() {
+  clearAuthSession();
+  currentUser.value = null;
+  onlyMine.value = false;
+  isEditingProject.value = false;
+  showAutoTakedownConfirm.value = false;
+  showToast('Kijelentkeztél a fejlesztői fiókból.');
+}
+
+function handleToggleOnlyMine() {
+  onlyMine.value = !onlyMine.value;
+  activeView.value = 'explore';
+}
+
+function handleProjectCreated(newProject: ProjectRecord) {
+  projects.value = [newProject, ...projects.value];
+  showToast(`A(z) „${newProject.name}” projekt sikeresen bekerült a piactérre!`);
+}
+
+function populateEditForm(project: ProjectRecord) {
+  editForm.value = {
+    name: project.name,
+    category: project.category || editCategories[0],
+    description: project.description,
+    longDescription: project.longDescription || '',
+    techStackInput: (project.techStack || []).join(', '),
+    repositoryUrl: project.repositoryUrl,
+    liveDemoUrl: project.liveDemoUrl || '',
+    imageUrl: project.imageUrl || ''
+  };
+}
+
+function openProjectDetails(project: ProjectRecord, startEditing = false) {
   selectedProject.value = project;
   activeGalleryImage.value = project.imageUrl || '';
   showTakedownDrawer.value = false;
   takedownFeedback.value = null;
   requesterContact.value = '';
   takedownReason.value = '';
+  showAutoTakedownConfirm.value = false;
+  autoTakedownReason.value = '';
+  autoTakedownError.value = '';
+  editErrorMessage.value = '';
+  populateEditForm(project);
+  isEditingProject.value = Boolean(startEditing && canManageProject(currentUser.value, project));
   detailsDialogRef.value?.showModal();
   void nextTick(() => {
     if (detailsDialogRef.value) {
@@ -403,6 +505,66 @@ function openProjectDetails(project: ProjectRecord) {
 
 function closeProjectDetails() {
   detailsDialogRef.value?.close();
+}
+
+async function handleSaveProjectEdit() {
+  if (!selectedProject.value || isSavingEdit.value) return;
+  const tags = editForm.value.techStackInput
+    .split(',')
+    .map((t) => t.trim())
+    .filter(Boolean);
+
+  if (tags.length === 0) {
+    editErrorMessage.value = 'Adj meg legalább egy technológiai címkét.';
+    return;
+  }
+
+  isSavingEdit.value = true;
+  editErrorMessage.value = '';
+
+  try {
+    const updated = await updateProject(selectedProject.value.id, {
+      name: editForm.value.name.trim(),
+      category: editForm.value.category.trim(),
+      description: editForm.value.description.trim(),
+      longDescription: editForm.value.longDescription.trim() || null,
+      techStack: tags,
+      repositoryUrl: editForm.value.repositoryUrl.trim(),
+      liveDemoUrl: editForm.value.liveDemoUrl.trim() || null,
+      imageUrl: editForm.value.imageUrl.trim() || null
+    });
+
+    projects.value = projects.value.map((p) => (p.id === updated.id ? updated : p));
+    selectedProject.value = updated;
+    activeGalleryImage.value = updated.imageUrl || '';
+    isEditingProject.value = false;
+    showToast(`A(z) „${updated.name}” projekt adatai frissítve.`);
+  } catch (err) {
+    editErrorMessage.value =
+      err instanceof ApiError ? err.message : 'Nem sikerült menteni a módosításokat.';
+  } finally {
+    isSavingEdit.value = false;
+  }
+}
+
+async function handleExecuteAutoTakedown() {
+  if (!selectedProject.value || isExecutingAutoTakedown.value) return;
+  isExecutingAutoTakedown.value = true;
+  autoTakedownError.value = '';
+
+  const target = selectedProject.value;
+  try {
+    const res = await autoTakedownProject(target.id, autoTakedownReason.value.trim());
+    projects.value = projects.value.filter((p) => p.id !== target.id);
+    closeProjectDetails();
+    selectedProject.value = null;
+    showToast(res.message);
+  } catch (err) {
+    autoTakedownError.value =
+      err instanceof ApiError ? err.message : 'Nem sikerült végrehajtani az azonnali eltávolítást.';
+  } finally {
+    isExecutingAutoTakedown.value = false;
+  }
 }
 
 async function handleDetailTakedownSubmit() {
@@ -433,6 +595,9 @@ async function handleDetailTakedownSubmit() {
 
 onMounted(() => {
   loadDirectory();
+  void fetchCurrentDeveloper().then((dev) => {
+    currentUser.value = dev;
+  });
 
   if (heroSearchContainerRef.value && 'IntersectionObserver' in window) {
     heroObserver = new IntersectionObserver(
@@ -482,8 +647,14 @@ onBeforeUnmount(() => {
       v-model:search-query="searchQuery"
       :total-projects="projects.length"
       :show-sticky-search="showStickySearch"
+      :current-user="currentUser"
+      :owned-projects-count="ownedProjectsCount"
+      :only-mine-active="onlyMine"
       @open-submit-modal="handleOpenSubmitModal"
       @jump-to-collections="scrollToCollections"
+      @open-auth-modal="handleOpenAuthModal"
+      @toggle-only-mine="handleToggleOnlyMine"
+      @logout="handleLogout"
     />
 
     <!-- ================================================================== -->
@@ -792,6 +963,15 @@ onBeforeUnmount(() => {
           <!-- Active Filter Chips Strip -->
           <div v-if="activeFilterCount > 0" class="mb-5 flex flex-wrap items-center gap-2">
             <button
+              v-if="onlyMine"
+              type="button"
+              class="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800 hover:bg-emerald-100"
+              @click="onlyMine = false"
+            >
+              <span>Csak saját projektjeim</span>
+              <span aria-hidden="true">&times;</span>
+            </button>
+            <button
               v-for="cat in selectedCategories"
               :key="'c-' + cat"
               type="button"
@@ -909,6 +1089,7 @@ onBeforeUnmount(() => {
                 :selected-tags="selectedTags"
                 :view-mode="viewMode"
                 :priority-load="idx < 2"
+                :is-owner="canManageProject(currentUser, project)"
                 @toggle-tag="toggleTag"
                 @open-details="openProjectDetails"
               />
@@ -1195,6 +1376,234 @@ onBeforeUnmount(() => {
 
         <!-- Modal Body -->
         <div class="space-y-6 p-6 sm:p-8">
+          <!-- Authenticated Owner Self-Service Controls -->
+          <div
+            v-if="canEditSelectedProject"
+            class="rounded-xl border border-emerald-300 bg-emerald-50/75 p-4"
+          >
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div class="text-xs font-bold uppercase tracking-wider text-emerald-800">
+                  Hitelesített Tulajdonosi Vezérlőpult
+                </div>
+                <p class="mt-0.5 text-xs text-emerald-900/90">
+                  Discorddal igazolt tulajdonosként közvetlenül szerkesztheted vagy azonnal eltávolíthatod a projektet.
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  class="min-h-[38px] cursor-pointer rounded-full border border-[#00565b] bg-white px-4 py-1.5 text-xs font-semibold text-[#00565b] transition-colors hover:bg-[#00565b] hover:text-white"
+                  @click="
+                    isEditingProject = !isEditingProject;
+                    showAutoTakedownConfirm = false;
+                    if (selectedProject) populateEditForm(selectedProject);
+                  "
+                >
+                  {{ isEditingProject ? 'Szerkesztés bezárása' : '✏️ Projekt szerkesztése' }}
+                </button>
+                <button
+                  type="button"
+                  class="min-h-[38px] cursor-pointer rounded-full border border-rose-300 bg-white px-4 py-1.5 text-xs font-semibold text-rose-700 transition-colors hover:bg-rose-600 hover:text-white"
+                  @click="
+                    showAutoTakedownConfirm = !showAutoTakedownConfirm;
+                    isEditingProject = false;
+                  "
+                >
+                  ⚡ Azonnali eltávolítás
+                </button>
+              </div>
+            </div>
+
+            <!-- Inline Two-Step Auto Takedown Confirmation -->
+            <div
+              v-if="showAutoTakedownConfirm"
+              class="mt-4 space-y-3 rounded-xl border border-rose-300 bg-white p-4"
+            >
+              <p class="text-xs font-semibold text-rose-800">
+                Biztosan azonnal eltávolítod a(z) „{{ selectedProject.name }}” projektet a piactérről? A művelet naplózásra kerül az audit csatornában.
+              </p>
+              <div>
+                <label for="auto-takedown-reason" class="block text-xs font-semibold text-[#213343]">
+                  Indoklás (opcionális)
+                </label>
+                <input
+                  id="auto-takedown-reason"
+                  v-model="autoTakedownReason"
+                  type="text"
+                  maxlength="500"
+                  placeholder="pl. A projekt archiválva lett vagy saját kérésre lekerül"
+                  class="mt-1 min-h-[40px] w-full rounded-lg border border-[#cbd6e2] bg-white px-3 py-1.5 text-xs text-[#213343]"
+                />
+              </div>
+              <div v-if="autoTakedownError" role="alert" class="text-xs font-medium text-rose-700">
+                {{ autoTakedownError }}
+              </div>
+              <div class="flex flex-wrap justify-end gap-2">
+                <button
+                  type="button"
+                  class="min-h-[38px] cursor-pointer rounded-full border border-[#cbd6e2] bg-white px-4 py-1.5 text-xs font-semibold text-[#33475b] hover:bg-[#f0f2f5]"
+                  @click="showAutoTakedownConfirm = false"
+                >
+                  Mégsem
+                </button>
+                <button
+                  type="button"
+                  :disabled="isExecutingAutoTakedown"
+                  class="min-h-[38px] cursor-pointer rounded-full bg-rose-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-rose-700 disabled:opacity-50"
+                  @click="handleExecuteAutoTakedown"
+                >
+                  {{ isExecutingAutoTakedown ? 'Eltávolítás...' : '🗑️ Végleges eltávolítás most' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Inline Project Edit Form -->
+            <form
+              v-if="isEditingProject"
+              method="post"
+              class="mt-4 space-y-3 rounded-xl border border-[#dbe4ed] bg-white p-4"
+              @submit.prevent="handleSaveProjectEdit"
+            >
+              <div class="text-xs font-bold uppercase tracking-wider text-[#213343]">
+                Projekt adatainak szerkesztése
+              </div>
+
+              <div v-if="editErrorMessage" role="alert" class="rounded-lg border border-rose-300 bg-rose-50 p-2.5 text-xs text-rose-800">
+                {{ editErrorMessage }}
+              </div>
+
+              <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label for="edit-project-name" class="block text-xs font-semibold text-[#213343]">
+                    Projekt neve *
+                  </label>
+                  <input
+                    id="edit-project-name"
+                    v-model="editForm.name"
+                    type="text"
+                    required
+                    minlength="2"
+                    maxlength="120"
+                    class="mt-1 min-h-[40px] w-full rounded-lg border border-[#7c98b6] bg-white px-3 py-1.5 text-sm text-[#213343]"
+                  />
+                </div>
+                <div>
+                  <label for="edit-project-category" class="block text-xs font-semibold text-[#213343]">
+                    Kategória
+                  </label>
+                  <select
+                    id="edit-project-category"
+                    v-model="editForm.category"
+                    class="mt-1 min-h-[40px] w-full rounded-lg border border-[#7c98b6] bg-white px-3 py-1.5 text-sm text-[#213343]"
+                  >
+                    <option v-for="cat in editCategories" :key="cat" :value="cat">
+                      {{ cat }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label for="edit-project-desc" class="block text-xs font-semibold text-[#213343]">
+                  Rövid leírás (kártya összefoglaló) *
+                </label>
+                <textarea
+                  id="edit-project-desc"
+                  v-model="editForm.description"
+                  rows="2"
+                  required
+                  minlength="10"
+                  maxlength="600"
+                  class="mt-1 w-full rounded-lg border border-[#7c98b6] bg-white px-3 py-2 text-sm text-[#213343]"
+                ></textarea>
+              </div>
+
+              <div>
+                <label for="edit-project-long-desc" class="block text-xs font-semibold text-[#213343]">
+                  Részletes bemutatás
+                </label>
+                <textarea
+                  id="edit-project-long-desc"
+                  v-model="editForm.longDescription"
+                  rows="4"
+                  maxlength="2400"
+                  class="mt-1 w-full rounded-lg border border-[#7c98b6] bg-white px-3 py-2 text-sm text-[#213343]"
+                ></textarea>
+              </div>
+
+              <div>
+                <label for="edit-project-tags" class="block text-xs font-semibold text-[#213343]">
+                  Technológiák (vesszővel elválasztva) *
+                </label>
+                <input
+                  id="edit-project-tags"
+                  v-model="editForm.techStackInput"
+                  type="text"
+                  required
+                  class="mt-1 min-h-[40px] w-full rounded-lg border border-[#7c98b6] bg-white px-3 py-1.5 text-sm text-[#213343]"
+                />
+              </div>
+
+              <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label for="edit-project-repo" class="block text-xs font-semibold text-[#213343]">
+                    Forráskód URL *
+                  </label>
+                  <input
+                    id="edit-project-repo"
+                    v-model="editForm.repositoryUrl"
+                    type="url"
+                    required
+                    spellcheck="false"
+                    class="mt-1 min-h-[40px] w-full rounded-lg border border-[#7c98b6] bg-white px-3 py-1.5 text-sm text-[#213343]"
+                  />
+                </div>
+                <div>
+                  <label for="edit-project-demo" class="block text-xs font-semibold text-[#213343]">
+                    Élő demó URL
+                  </label>
+                  <input
+                    id="edit-project-demo"
+                    v-model="editForm.liveDemoUrl"
+                    type="url"
+                    spellcheck="false"
+                    class="mt-1 min-h-[40px] w-full rounded-lg border border-[#7c98b6] bg-white px-3 py-1.5 text-sm text-[#213343]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label for="edit-project-image" class="block text-xs font-semibold text-[#213343]">
+                  Előnézeti kép URL
+                </label>
+                <input
+                  id="edit-project-image"
+                  v-model="editForm.imageUrl"
+                  type="text"
+                  spellcheck="false"
+                  class="mt-1 min-h-[40px] w-full rounded-lg border border-[#7c98b6] bg-white px-3 py-1.5 text-sm text-[#213343]"
+                />
+              </div>
+
+              <div class="flex flex-wrap justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  class="min-h-[38px] cursor-pointer rounded-full border border-[#cbd6e2] bg-white px-4 py-1.5 text-xs font-semibold text-[#33475b] hover:bg-[#f0f2f5]"
+                  @click="isEditingProject = false"
+                >
+                  Mégsem
+                </button>
+                <button
+                  type="submit"
+                  :disabled="isSavingEdit"
+                  class="min-h-[38px] cursor-pointer rounded-full bg-[#00565b] px-5 py-1.5 text-xs font-semibold text-white hover:bg-[#004246] disabled:opacity-50"
+                >
+                  {{ isSavingEdit ? 'Mentés...' : 'Változtatások mentése' }}
+                </button>
+              </div>
+            </form>
+          </div>
           <div class="flex flex-wrap items-start justify-between gap-4">
             <div>
               <div class="flex flex-wrap items-center gap-2">
@@ -1302,7 +1711,15 @@ onBeforeUnmount(() => {
           <div class="border-t border-[#edf1f5] pt-5">
             <div class="flex flex-wrap items-center justify-between gap-3 text-xs text-[#516f90]">
               <span>Te vagy az alkotó, és módosítást vagy eltávolítást kérsz?</span>
-              <div class="flex items-center gap-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <button
+                  v-if="!currentUser"
+                  type="button"
+                  class="cursor-pointer rounded-full border border-[#00565b] bg-[#f0f7f7] px-3.5 py-1.5 text-xs font-semibold text-[#00565b] hover:bg-[#00565b] hover:text-white"
+                  @click="closeProjectDetails(); handleOpenAuthModal('login')"
+                >
+                  Alkotói belépés (Discord)
+                </button>
                 <a
                   :href="buildTakedownMailtoUrl(selectedProject)"
                   class="rounded-full border border-[#cbd6e2] bg-white px-3.5 py-1.5 text-xs font-medium text-[#33475b] hover:border-rose-400 hover:text-rose-700"
@@ -1384,7 +1801,14 @@ onBeforeUnmount(() => {
     <!-- Project Submission Modal -->
     <SubmissionModal
       ref="submissionModalRef"
+      :current-user="currentUser"
       @project-created="handleProjectCreated"
+    />
+
+    <!-- Certified Developer Authentication Modal -->
+    <AuthModal
+      ref="authModalRef"
+      @authenticated="handleDeveloperAuthenticated"
     />
 
     <!-- Global Dark Slate Footer -->
