@@ -8,26 +8,10 @@ import {
   GatewayIntentBits,
   TextChannel
 } from 'discord.js';
-import fs from 'fs';
-import path from 'path';
 import { getDiscordConfig } from './config';
+import { buildProjectEmbedPayload, loadCatalogProjects as getCatalogProjects } from './project-embeds';
 import { setupServer } from './setup-server';
 import { setupCommunity } from './setup-community';
-
-function getCatalogProjects(): any[] {
-  const possiblePaths = [
-    path.resolve(process.cwd(), '..', 'projects_catalog.json'),
-    path.resolve(process.cwd(), '..', 'frontend', 'src', 'services', 'initialProjects.json'),
-    path.resolve(process.cwd(), 'projects_catalog.json')
-  ];
-
-  for (const p of possiblePaths) {
-    if (fs.existsSync(p)) {
-      return JSON.parse(fs.readFileSync(p, 'utf-8'));
-    }
-  }
-  return [];
-}
 
 async function getClient(): Promise<Client> {
   const config = getDiscordConfig();
@@ -143,45 +127,18 @@ async function handlePostProject(projectNameOrId: string) {
       throw new Error('Nem található a projektek csatorna! Futtasd a setup parancsot.');
     }
 
-    const embed = new EmbedBuilder()
-      .setTitle(`🚀 ${project.name}`)
-      .setDescription(project.longDescription || project.description)
-      .setColor(project.tier === 'S' ? Colors.Gold : project.tier === 'A' ? Colors.Purple : Colors.Green)
-      .addFields(
-        { name: '👤 Készítő', value: project.authorHandle, inline: true },
-        { name: '📂 Kategória', value: project.category || 'Projekt', inline: true },
-        { name: '🏆 Besorolás', value: `${project.tier || 'B'} Tier ${project.rank ? `(#${project.rank})` : ''}`, inline: true },
-        { name: '🛠️ Technológia', value: (project.techStack || []).join(' • '), inline: false }
-      )
-      .setFooter({ text: 'StrataHu • Magyar Fejlesztői Bemutató' })
-      .setTimestamp();
-
-    if (project.imageUrl && (project.imageUrl.startsWith('http://') || project.imageUrl.startsWith('https://'))) {
-      embed.setImage(project.imageUrl);
-    }
-
-    const row = new ActionRowBuilder<ButtonBuilder>();
-    if (project.repositoryUrl) {
-      row.addComponents(
-        new ButtonBuilder()
-          .setLabel('GitHub Forráskód')
-          .setStyle(ButtonStyle.Link)
-          .setURL(project.repositoryUrl)
-      );
-    }
-    if (project.liveDemoUrl) {
-      row.addComponents(
-        new ButtonBuilder()
-          .setLabel('Élő Weboldal')
-          .setStyle(ButtonStyle.Link)
-          .setURL(project.liveDemoUrl)
-      );
-    }
-
-    await showcaseChannel.send({
-      embeds: [embed],
-      components: row.components.length > 0 ? [row] : []
+    const payload = buildProjectEmbedPayload(project, {
+      titlePrefix: '🚀 ',
+      authorLabel: '👤 Készítő',
+      categoryLabel: '📂 Kategória',
+      tierLabel: '🏆 Besorolás',
+      techLabel: '🛠️ Technológia',
+      repoButtonLabel: 'GitHub Forráskód',
+      demoButtonLabel: 'Élő Weboldal',
+      footerText: 'StrataHu • Magyar Fejlesztői Bemutató'
     });
+
+    await showcaseChannel.send(payload);
 
     console.log(`✅ A(z) "${project.name}" projekt sikeresen be lett mutatva a #${showcaseChannel.name} csatornában!`);
   } finally {
@@ -234,47 +191,20 @@ async function handlePostWeeklySpotlight(projectName?: string) {
 
     if (!starChannel) throw new Error('Nem található a hét-projektje csatorna!');
 
-    const embed = new EmbedBuilder()
-      .setTitle(`⭐ A HÉT PROJEKTJE: ${project.name}`)
-      .setColor(Colors.Gold)
-      .setDescription(project.longDescription || project.description)
-      .addFields(
-        { name: '👤 Készítő / Szervezet', value: project.authorHandle, inline: true },
-        { name: '📂 Kategória', value: project.category || 'Projekt', inline: true },
-        { name: '🏆 Besorolás', value: `${project.tier || 'S'} Tier ${project.rank ? `(#${project.rank})` : ''}`, inline: true },
-        { name: '🛠️ Technológiai Stack', value: (project.techStack || []).join(' • ') || 'N/A', inline: false }
-      )
-      .setFooter({ text: 'StrataHu • A Hét Kiemelt Magyar Projektje' })
-      .setTimestamp();
-
-    if (project.highlights && project.highlights.length > 0) {
-      embed.addFields({
-        name: '🌟 Kiemelkedő Jellemzők',
-        value: project.highlights.map((h: string) => `• ${h}`).join('\n'),
-        inline: false
-      });
-    }
-
-    if (project.imageUrl && (project.imageUrl.startsWith('http://') || project.imageUrl.startsWith('https://'))) {
-      embed.setImage(project.imageUrl);
-    }
-
-    const row = new ActionRowBuilder<ButtonBuilder>();
-    if (project.repositoryUrl) {
-      row.addComponents(
-        new ButtonBuilder().setLabel('GitHub Repó').setStyle(ButtonStyle.Link).setURL(project.repositoryUrl)
-      );
-    }
-    if (project.liveDemoUrl) {
-      row.addComponents(
-        new ButtonBuilder().setLabel('Élő Bemutató').setStyle(ButtonStyle.Link).setURL(project.liveDemoUrl)
-      );
-    }
-
-    await starChannel.send({
-      embeds: [embed],
-      components: row.components.length > 0 ? [row] : []
+    const payload = buildProjectEmbedPayload(project, {
+      titlePrefix: '⭐ A HÉT PROJEKTJE: ',
+      color: Colors.Gold,
+      authorLabel: '👤 Készítő / Szervezet',
+      categoryLabel: '📂 Kategória',
+      tierLabel: '🏆 Besorolás',
+      techLabel: '🛠️ Technológiai Stack',
+      repoButtonLabel: 'GitHub Repó',
+      demoButtonLabel: 'Élő Bemutató',
+      footerText: 'StrataHu • A Hét Kiemelt Magyar Projektje',
+      includeHighlights: true
     });
+
+    await starChannel.send(payload);
 
     console.log(`✅ A Hét Projektje (${project.name}) sikeresen közzétéve a #${starChannel.name} csatornában!`);
   } finally {

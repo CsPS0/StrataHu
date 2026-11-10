@@ -16,26 +16,14 @@ import {
   TextInputBuilder,
   TextInputStyle
 } from 'discord.js';
-import fs from 'fs';
-import path from 'path';
 import { getDiscordConfig } from './config';
 import { createFoundingCenterPayload, createRoleSelectorPayload, INTEREST_ROLES } from './roles';
 import { checkGitHubUpdates } from './github-tracker';
-
-function getCatalogProjects(): any[] {
-  const possiblePaths = [
-    path.resolve(process.cwd(), '..', 'projects_catalog.json'),
-    path.resolve(process.cwd(), '..', 'frontend', 'src', 'services', 'initialProjects.json'),
-    path.resolve(process.cwd(), 'projects_catalog.json')
-  ];
-
-  for (const p of possiblePaths) {
-    if (fs.existsSync(p)) {
-      return JSON.parse(fs.readFileSync(p, 'utf-8'));
-    }
-  }
-  return [];
-}
+import {
+  buildProjectEmbedPayload,
+  loadCatalogProjects as getCatalogProjects,
+  pickRandomShowcaseProject
+} from './project-embeds';
 
 const commands = [
   new SlashCommandBuilder()
@@ -847,39 +835,14 @@ async function startBot() {
         return;
       }
 
-      const embed = new EmbedBuilder()
-        .setTitle(`🚀 ${match.name}`)
-        .setDescription(match.longDescription || match.description)
-        .setColor(match.tier === 'S' ? Colors.Gold : match.tier === 'A' ? Colors.Purple : Colors.Green)
-        .addFields(
-          { name: 'Készítő', value: match.authorHandle, inline: true },
-          { name: 'Kategória', value: match.category || 'Projekt', inline: true },
-          { name: 'Besorolás', value: `${match.tier || 'B'} Tier`, inline: true },
-          { name: 'Technológiák', value: (match.techStack || []).join(' • '), inline: false }
-        )
-        .setFooter({ text: 'StrataHu Katalógus • 1 000 magyar projekt' })
-        .setTimestamp();
-
-      if (match.imageUrl && (match.imageUrl.startsWith('http://') || match.imageUrl.startsWith('https://'))) {
-        embed.setImage(match.imageUrl);
-      }
-
-      const row = new ActionRowBuilder<ButtonBuilder>();
-      if (match.repositoryUrl) {
-        row.addComponents(
-          new ButtonBuilder().setLabel('GitHub').setStyle(ButtonStyle.Link).setURL(match.repositoryUrl)
-        );
-      }
-      if (match.liveDemoUrl) {
-        row.addComponents(
-          new ButtonBuilder().setLabel('Élő oldal').setStyle(ButtonStyle.Link).setURL(match.liveDemoUrl)
-        );
-      }
-
-      await interaction.reply({
-        embeds: [embed],
-        components: row.components.length > 0 ? [row] : []
+      const payload = buildProjectEmbedPayload(match, {
+        titlePrefix: '🚀 ',
+        repoButtonLabel: 'GitHub',
+        demoButtonLabel: 'Élő oldal',
+        footerText: 'StrataHu Katalógus • 1 000 magyar projekt'
       });
+
+      await interaction.reply(payload);
       return;
     }
 
@@ -908,64 +871,34 @@ async function startBot() {
 
     if (commandName === 'het-projektje') {
       const featured = projects.find((p: any) => p.name === 'Pala') || projects[0];
-      const embed = new EmbedBuilder()
-        .setTitle(`⭐ A Hét Kiemelt Projektje: ${featured.name}`)
-        .setColor(Colors.Gold)
-        .setDescription(featured.longDescription || featured.description)
-        .addFields(
-          { name: 'Készítő', value: featured.authorHandle, inline: true },
-          { name: 'Kategória', value: featured.category || 'Projekt', inline: true },
-          { name: 'Besorolás', value: `${featured.tier || 'S'} Tier (#${featured.rank || 1})`, inline: true },
-          { name: 'Technológiák', value: (featured.techStack || []).join(' • ') || 'N/A', inline: false }
-        )
-        .setFooter({ text: 'StrataHu • stratahu.dev' })
-        .setTimestamp();
+      const payload = buildProjectEmbedPayload(featured, {
+        titlePrefix: '⭐ A Hét Kiemelt Projektje: ',
+        color: Colors.Gold,
+        repoButtonLabel: 'GitHub Repó',
+        demoButtonLabel: 'Élő Oldal',
+        footerText: 'StrataHu • stratahu.dev',
+        includeHighlights: true
+      });
 
-      const row = new ActionRowBuilder<ButtonBuilder>();
-      if (featured.repositoryUrl) {
-        row.addComponents(new ButtonBuilder().setLabel('GitHub Repó').setStyle(ButtonStyle.Link).setURL(featured.repositoryUrl));
-      }
-      if (featured.liveDemoUrl) {
-        row.addComponents(new ButtonBuilder().setLabel('Élő Oldal').setStyle(ButtonStyle.Link).setURL(featured.liveDemoUrl));
-      }
-
-      await interaction.reply({ embeds: [embed], components: row.components.length > 0 ? [row] : [] });
+      await interaction.reply(payload);
       return;
     }
 
     if (commandName === 'veletlen-projekt') {
-      const randomProject = projects[Math.floor(Math.random() * projects.length)];
+      const randomProject = pickRandomShowcaseProject(projects);
       if (!randomProject) {
         await interaction.reply({ content: 'Nem található projekt a katalógusban.', ephemeral: true });
         return;
       }
 
-      const embed = new EmbedBuilder()
-        .setTitle(`🎲 Véletlen Magyar Projekt: ${randomProject.name}`)
-        .setDescription(randomProject.longDescription || randomProject.description)
-        .setColor(randomProject.tier === 'S' ? Colors.Gold : randomProject.tier === 'A' ? Colors.Purple : Colors.Green)
-        .addFields(
-          { name: 'Készítő', value: randomProject.authorHandle || 'Ismeretlen', inline: true },
-          { name: 'Kategória', value: randomProject.category || 'Projekt', inline: true },
-          { name: 'Besorolás', value: `${randomProject.tier || 'B'} Tier ${randomProject.rank ? `(#${randomProject.rank})` : ''}`, inline: true },
-          { name: 'Technológiák', value: (randomProject.techStack || []).join(' • ') || 'N/A', inline: false }
-        )
-        .setFooter({ text: 'StrataHu Katalógus • 1 000 hazai projekt' })
-        .setTimestamp();
+      const payload = buildProjectEmbedPayload(randomProject, {
+        titlePrefix: '🎲 Véletlen Magyar Projekt: ',
+        repoButtonLabel: 'GitHub Repó',
+        demoButtonLabel: 'Élő Oldal',
+        footerText: 'StrataHu Katalógus • 1 000 hazai projekt'
+      });
 
-      if (randomProject.imageUrl && (randomProject.imageUrl.startsWith('http://') || randomProject.imageUrl.startsWith('https://'))) {
-        embed.setImage(randomProject.imageUrl);
-      }
-
-      const row = new ActionRowBuilder<ButtonBuilder>();
-      if (randomProject.repositoryUrl) {
-        row.addComponents(new ButtonBuilder().setLabel('GitHub Repó').setStyle(ButtonStyle.Link).setURL(randomProject.repositoryUrl));
-      }
-      if (randomProject.liveDemoUrl) {
-        row.addComponents(new ButtonBuilder().setLabel('Élő Oldal').setStyle(ButtonStyle.Link).setURL(randomProject.liveDemoUrl));
-      }
-
-      await interaction.reply({ embeds: [embed], components: row.components.length > 0 ? [row] : [] });
+      await interaction.reply(payload);
       return;
     }
 

@@ -83,7 +83,12 @@
     ],
     "repositoryUrl": "https://github.com/hunspell/hunspell",
     "liveDemoUrl": "https://hunspell.github.io",
-    "createdAtUtc": "2026-09-01T12:00:00.000Z"
+    "createdAtUtc": "2026-09-01T12:00:00.000Z",
+    "imageUrl": "/screenshots/hunspell-web.webp",
+    "galleryImages": [
+      "/screenshots/hunspell-web.webp",
+      "https://opengraph.githubassets.com/e4b352c119f25b80aa50b35797b592a393639502803b476e88ab7a2c6548ac21/hunspell/hunspell"
+    ]
   },
   {
     "id": "740a349b-73ce-4ef2-9214-e7c65c490a02",
@@ -109,13 +114,14 @@
     ],
     "repositoryUrl": "https://github.com/syslog-ng/syslog-ng",
     "liveDemoUrl": "https://www.syslog-ng.com",
-    "createdAtUtc": "2026-09-10T12:00:00.000Z"
+    "createdAtUtc": "2026-09-10T12:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/a367db6f76b799554928ee216ecac0cefdd8cf56d537c830e3dd0bfeb76bbdb4/syslog-ng/syslog-ng"
   },
   {
     "id": "a1811314-0516-4f5b-9f91-01841d46e801",
     "name": "Firka",
     "category": "Oktatás & e-Kréta",
-    "imageUrl": "/screenshots/firka-og.png",
+    "imageUrl": "/screenshots/firka-app.webp",
     "tier": "S",
     "rank": 5,
     "verdict": "A QwIT-Development közösség által épített, népszerű nyílt forráskódú e-KRÉTA mobilalkalmazás és Firka Web bővítmény.",
@@ -135,7 +141,11 @@
     ],
     "repositoryUrl": "https://github.com/QwIT-Development/firka",
     "liveDemoUrl": "https://firka.app",
-    "createdAtUtc": "2026-10-22T14:30:00.000Z"
+    "createdAtUtc": "2026-10-22T14:30:00.000Z",
+    "galleryImages": [
+      "/screenshots/firka-app.webp",
+      "/screenshots/firka-og.png"
+    ]
   },
   {
     "id": "e5255758-4950-4d9f-bd35-45285b80c205",
@@ -174,7 +184,7 @@
     "id": "c3033536-2738-4b7d-9b13-23063f68a003",
     "name": "YourSitee",
     "category": "Web & Alkotói eszközök",
-    "imageUrl": "https://yoursit.ee/assets/brand/ogp.webp",
+    "imageUrl": "/screenshots/yoursitee-og.webp",
     "tier": "S",
     "rank": 7,
     "verdict": "Igényes, fiatal magyar csapat által épített vizuális link-in-bio és mikro-portfólió platform.",
@@ -219,7 +229,8 @@
       "DevOps"
     ],
     "repositoryUrl": "https://github.com/karalabe/xgo",
-    "createdAtUtc": "2026-09-12T10:00:00.000Z"
+    "createdAtUtc": "2026-09-12T10:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/2a393e02c8aa8aec6cd977cff4e7b71153f4d5d250a85fc1895041b86825dd07/karalabe/xgo"
   },
   {
     "id": "359b3d1b-561b-4176-bf10-911e30a5ca04",
@@ -245,7 +256,8 @@
     ],
     "repositoryUrl": "https://github.com/bczsalba/pytermgui",
     "liveDemoUrl": "https://ptg.bczsalba.com",
-    "createdAtUtc": "2026-09-15T15:00:00.000Z"
+    "createdAtUtc": "2026-09-15T15:00:00.000Z",
+    "imageUrl": "https://github.com/bczsalba/pytermgui/raw/master/assets/readme/screenshot.png"
   },
   {
     "id": "0d3a5a7b-0cf2-4a02-bca4-d8bc98adcb05",
@@ -355,7 +367,7 @@
     "id": "31fca021-d130-4740-968b-ca188e727508",
     "name": "Toll",
     "category": "Oktatás & e-Kréta",
-    "imageUrl": "/screenshots/toll-og.png",
+    "imageUrl": "/screenshots/toll-web.webp",
     "tier": "A",
     "rank": 14,
     "verdict": "Natív Go + Wails + React technológiára épülő asztali e-KRÉTA kliens modern dizájnnal és alacsony fogyasztással.",
@@ -376,7 +388,11 @@
     ],
     "repositoryUrl": "https://github.com/doomhyena/toll",
     "liveDemoUrl": "https://doomhyena.hu/#projects",
-    "createdAtUtc": "2026-11-04T18:00:00.000Z"
+    "createdAtUtc": "2026-11-04T18:00:00.000Z",
+    "galleryImages": [
+      "/screenshots/toll-web.webp",
+      "/screenshots/toll-og.png"
+    ]
   },
   {
     "id": "542a1789-53b7-4d76-b633-896ea2083a09",
@@ -453,7 +469,8 @@
       "e-KRÉTA"
     ],
     "repositoryUrl": "https://github.com/boapps/Szivacs-Naplo",
-    "createdAtUtc": "2026-08-10T10:00:00.000Z"
+    "createdAtUtc": "2026-08-10T10:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/15f993167943850cecb37029d0899a53ae4e47d5e706ee7e6a074ee1d313ec1d/boapps/Szivacs-Naplo"
   },
   {
     "id": "8c37d87f-9f7a-4286-9a2c-98246d81a511",
@@ -478,8 +495,9 @@
       "PostgreSQL"
     ],
     "repositoryUrl": "https://github.com/kir-dev/cmsch",
-    "liveDemoUrl": "https://cmsch.kir-dev.hu",
-    "createdAtUtc": "2026-10-05T12:00:00.000Z"
+    "liveDemoUrl": "https://kir-dev.hu",
+    "createdAtUtc": "2026-10-05T12:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/ad3aa3bd85abbfacba6438cf897a2171105800eca7040dd1405af47e2c640b04/kir-dev/cmsch"
   },
   {
     "id": "3491ba38-89c5-4d76-9cf8-6512b9d7a213",
@@ -504,7 +522,8 @@
     ],
     "repositoryUrl": "https://github.com/kir-dev/pek-next",
     "liveDemoUrl": "https://pek.sch.bme.hu",
-    "createdAtUtc": "2026-09-25T11:00:00.000Z"
+    "createdAtUtc": "2026-09-25T11:00:00.000Z",
+    "imageUrl": "/screenshots/pek-app.webp"
   },
   {
     "id": "ab501467-62e9-4467-bc1a-6415f9d12a14",
@@ -528,9 +547,14 @@
       "OIDC",
       "PostgreSQL"
     ],
-    "repositoryUrl": "https://github.com/kir-dev/schacc",
-    "liveDemoUrl": "https://account.sch.bme.hu",
-    "createdAtUtc": "2026-09-28T14:00:00.000Z"
+    "repositoryUrl": "https://github.com/kir-dev/passport-authsch",
+    "liveDemoUrl": "https://kir-dev.hu",
+    "createdAtUtc": "2026-09-28T14:00:00.000Z",
+    "imageUrl": "/screenshots/kir-dev-web.webp",
+    "galleryImages": [
+      "/screenshots/kir-dev-web.webp",
+      "https://kir-dev.hu/images/default-og.png"
+    ]
   },
   {
     "id": "bb601578-73fa-4578-cd2b-75260ae23b15",
@@ -553,9 +577,14 @@
       "React",
       "PostgreSQL"
     ],
-    "repositoryUrl": "https://github.com/kir-dev/konzisite",
-    "liveDemoUrl": "https://konzi.sch.bme.hu",
-    "createdAtUtc": "2026-10-02T09:00:00.000Z"
+    "repositoryUrl": "https://github.com/kir-dev/konzisite-frontend",
+    "liveDemoUrl": "https://konzi.vik.hk",
+    "createdAtUtc": "2026-10-02T09:00:00.000Z",
+    "imageUrl": "/screenshots/konzisite-app.webp",
+    "galleryImages": [
+      "/screenshots/konzisite-app.webp",
+      "https://warp.sch.bme.hu/images/konzisite_email_header_nonvector"
+    ]
   },
   {
     "id": "cc701689-840b-4689-de3c-86371bf34c16",
@@ -579,9 +608,14 @@
       "BKK FUTÁR",
       "Tailwind CSS"
     ],
-    "repositoryUrl": "https://github.com/kir-dev/indulas-next",
-    "liveDemoUrl": "https://indulas.sch.bme.hu",
-    "createdAtUtc": "2026-10-08T15:30:00.000Z"
+    "repositoryUrl": "https://github.com/kir-dev/indulasch-v3",
+    "liveDemoUrl": "https://kir-dev.hu",
+    "createdAtUtc": "2026-10-08T15:30:00.000Z",
+    "imageUrl": "/screenshots/kir-dev-web.webp",
+    "galleryImages": [
+      "/screenshots/kir-dev-web.webp",
+      "https://kir-dev.hu/images/default-og.png"
+    ]
   },
   {
     "id": "dd801790-951c-4790-ef4d-97482c045d17",
@@ -606,7 +640,8 @@
       "Docker"
     ],
     "repositoryUrl": "https://github.com/s4pp1/stremhu-source",
-    "createdAtUtc": "2026-09-05T18:00:00.000Z"
+    "createdAtUtc": "2026-09-05T18:00:00.000Z",
+    "imageUrl": "https://raw.githubusercontent.com/s4pp1/stremhu-source/main/docs/assets/logo.png"
   },
   {
     "id": "ee901801-062d-4801-f05e-08593d156e18",
@@ -630,7 +665,8 @@
       "API"
     ],
     "repositoryUrl": "https://github.com/detarkende/stremio-ncore-addon",
-    "createdAtUtc": "2026-09-12T13:00:00.000Z"
+    "createdAtUtc": "2026-09-12T13:00:00.000Z",
+    "imageUrl": "https://raw.githubusercontent.com/detarkende/stremio-ncore-addon/master/docs/stremio-ncore-addon-banner.png"
   },
   {
     "id": "ff001912-173e-4912-016f-19604e267f19",
@@ -654,7 +690,8 @@
       "BKK FUTÁR"
     ],
     "repositoryUrl": "https://github.com/amaximus/bkk-stop-card",
-    "createdAtUtc": "2026-09-20T16:00:00.000Z"
+    "createdAtUtc": "2026-09-20T16:00:00.000Z",
+    "imageUrl": "https://raw.githubusercontent.com/amaximus/bkk-stop-card/master/bkk_lovelace.jpg"
   },
   {
     "id": "00112023-284f-4023-1270-20715f378020",
@@ -679,7 +716,8 @@
       "API"
     ],
     "repositoryUrl": "https://github.com/amaximus/bkk_stop",
-    "createdAtUtc": "2026-09-22T17:00:00.000Z"
+    "createdAtUtc": "2026-09-22T17:00:00.000Z",
+    "imageUrl": "https://raw.githubusercontent.com/amaximus/bkk_stop/master/example/bkk_lovelace.jpg"
   },
   {
     "id": "11223134-3950-4134-2381-318260489121",
@@ -704,7 +742,8 @@
       "FinTech"
     ],
     "repositoryUrl": "https://github.com/agabor/szamlazz-hu-sdk",
-    "createdAtUtc": "2026-09-14T11:00:00.000Z"
+    "createdAtUtc": "2026-09-14T11:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/a3b71babd65a8c058d3a835b865a0320eda4ed3378ed7d0832ac933b0fe484db/agabor/szamlazz-hu-sdk"
   },
   {
     "id": "22334245-4061-4245-3492-42937159a222",
@@ -729,7 +768,8 @@
       "FinTech"
     ],
     "repositoryUrl": "https://github.com/ewngs/szamlazz.js",
-    "createdAtUtc": "2026-09-16T13:30:00.000Z"
+    "createdAtUtc": "2026-09-16T13:30:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/12fbcca6ba73a86cc97778e85b063d9677b78ba76251d28559cc3aafca49ae63/ewngs/szamlazz.js"
   },
   {
     "id": "33445356-5172-4356-45a3-53a4826ab323",
@@ -754,7 +794,8 @@
       "FinTech"
     ],
     "repositoryUrl": "https://github.com/deviddev/billingo-api-v3-php-and-laravel-wrapper",
-    "createdAtUtc": "2026-09-25T15:00:00.000Z"
+    "createdAtUtc": "2026-09-25T15:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/a4d64b0729e32831b842419d2655ad75eae5bc16d59eab6b1607294217b08425/deviddev/billingo-api-v3-php-and-laravel-wrapper"
   },
   {
     "id": "44556467-6283-4467-56b4-64b5937bc424",
@@ -779,7 +820,8 @@
       "FinTech"
     ],
     "repositoryUrl": "https://github.com/conedevelopment/simplepay-gateway",
-    "createdAtUtc": "2026-09-28T10:00:00.000Z"
+    "createdAtUtc": "2026-09-28T10:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/a8a59ac5e4812a5f7d636799d0de887bb5b6479f4801f2d7600082e8eff43f41/conedevelopment/simplepay-gateway"
   },
   {
     "id": "55667578-7394-4578-67c5-75c6a48cd525",
@@ -804,7 +846,8 @@
       "Scraping"
     ],
     "repositoryUrl": "https://github.com/tolnai/home_assistant_idokep_scraper",
-    "createdAtUtc": "2026-10-01T12:00:00.000Z"
+    "createdAtUtc": "2026-10-01T12:00:00.000Z",
+    "imageUrl": "https://raw.githubusercontent.com/tolnai/home_assistant_idokep_scraper/master/assets/sample.png"
   },
   {
     "id": "66778689-84a5-4689-78d6-86d7b59de626",
@@ -829,7 +872,8 @@
       "FinTech"
     ],
     "repositoryUrl": "https://github.com/mondalaci/mnb-rates",
-    "createdAtUtc": "2026-09-08T16:00:00.000Z"
+    "createdAtUtc": "2026-09-08T16:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/56f32f3961418e68f0cbebbef473d61eead9fede1f7c0a9a298ae3941ca69553/mondalaci/mnb-rates"
   },
   {
     "id": "77889790-95b6-4790-89e7-97e8c6aef727",
@@ -853,9 +897,14 @@
       "NLP",
       "LLM"
     ],
-    "repositoryUrl": "https://github.com/NYTK/puli-bert-large",
+    "repositoryUrl": "https://github.com/nytud/NYTK-NerKor",
     "liveDemoUrl": "https://huggingface.co/NYTK",
-    "createdAtUtc": "2026-09-11T14:00:00.000Z"
+    "createdAtUtc": "2026-09-11T14:00:00.000Z",
+    "imageUrl": "/screenshots/puli-nytk.webp",
+    "galleryImages": [
+      "/screenshots/puli-nytk.webp",
+      "https://cdn-thumbnails.huggingface.co/social-thumbnails/NYTK.png"
+    ]
   },
   {
     "id": "88990801-a6c7-4801-9af8-a8f9d7bfa828",
@@ -880,7 +929,8 @@
       "REST API"
     ],
     "repositoryUrl": "https://github.com/dlt-rilmta/emtsv",
-    "createdAtUtc": "2026-09-02T11:00:00.000Z"
+    "createdAtUtc": "2026-09-02T11:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/646f4012919a092ef63fca61838f370404f8d94cbb0e00604570cced3b309089/nytud/emtsv"
   },
   {
     "id": "99aa1912-b7d8-4912-ab09-b90ae8c0b929",
@@ -906,7 +956,8 @@
     ],
     "repositoryUrl": "https://github.com/teki/jstvc",
     "liveDemoUrl": "https://teki.github.io/jstvc/",
-    "createdAtUtc": "2026-08-15T15:00:00.000Z"
+    "createdAtUtc": "2026-08-15T15:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/fa2a22a263b00c7f90996c43dd8c9a5bd92170465d287b075613c6ea2e6cb552/teki/jstvc"
   },
   {
     "id": "aabb2023-c8e9-4023-bc1a-ca1bf9d1ca30",
@@ -931,7 +982,8 @@
       "Retró"
     ],
     "repositoryUrl": "https://github.com/no1msd/primgo",
-    "createdAtUtc": "2026-08-25T17:00:00.000Z"
+    "createdAtUtc": "2026-08-25T17:00:00.000Z",
+    "imageUrl": "https://raw.githubusercontent.com/no1msd/primgo/main/ui/assets/icon128.png"
   },
   {
     "id": "bbcc3134-d9fa-4134-cd2b-db2c0ae2db31",
@@ -955,7 +1007,8 @@
       "Concurrency"
     ],
     "repositoryUrl": "https://github.com/akarnokd/RxJava2Extensions",
-    "createdAtUtc": "2026-09-05T10:00:00.000Z"
+    "createdAtUtc": "2026-09-05T10:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/df4dcea3196eb93c8449104ce11384f29a1932e3111ae558b58b859c9e596f08/akarnokd/RxJavaExtensions"
   },
   {
     "id": "ccdd4245-ea0b-4245-de3c-ec3d1bf3ec32",
@@ -980,7 +1033,8 @@
     ],
     "repositoryUrl": "https://github.com/coollabsio/orbit",
     "liveDemoUrl": "https://orbit.so",
-    "createdAtUtc": "2026-10-18T14:00:00.000Z"
+    "createdAtUtc": "2026-10-18T14:00:00.000Z",
+    "imageUrl": "https://orbit.so/og-image.png"
   },
   {
     "id": "ddee5356-fb1c-4356-ef4d-fd4e2c04fd33",
@@ -1005,7 +1059,8 @@
       "Automation"
     ],
     "repositoryUrl": "https://github.com/bitrise-io/envman",
-    "createdAtUtc": "2026-09-04T12:00:00.000Z"
+    "createdAtUtc": "2026-09-04T12:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/0564bdf4fedda0880bab6bb012b1550e57eb5e5232323524c7485443947fe9d9/bitrise-io/envman"
   },
   {
     "id": "eeff6467-0c2d-4467-f05e-0e5f3d150e34",
@@ -1029,7 +1084,8 @@
       "IoT"
     ],
     "repositoryUrl": "https://github.com/ha-parcel-integrations/ha-magyar-posta",
-    "createdAtUtc": "2026-09-29T16:30:00.000Z"
+    "createdAtUtc": "2026-09-29T16:30:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/929f0002d8c59bb2c74b96954a1d86eca6ccbf138e39553640551868dfdb213a/ha-parcel-integrations/ha-magyar-posta"
   },
   {
     "id": "ff007578-1d3e-4578-016f-1f604e261f35",
@@ -1054,7 +1110,8 @@
       "Scraping"
     ],
     "repositoryUrl": "https://github.com/gptrk0/PYHABOT",
-    "createdAtUtc": "2026-09-30T14:00:00.000Z"
+    "createdAtUtc": "2026-09-30T14:00:00.000Z",
+    "imageUrl": "https://raw.githubusercontent.com/Patrick2562/PYHABOT/master/assets/logo.png"
   },
   {
     "id": "00118689-2e4f-4689-1270-20715f372036",
@@ -1078,7 +1135,8 @@
       "HardverApró"
     ],
     "repositoryUrl": "https://github.com/Lehoczky/apro-scrape",
-    "createdAtUtc": "2026-10-03T11:00:00.000Z"
+    "createdAtUtc": "2026-10-03T11:00:00.000Z",
+    "imageUrl": "https://raw.githubusercontent.com/Lehoczky/apro-scrape/master/resources/icon.png"
   },
   {
     "id": "11229790-3f50-4790-2381-318260483137",
@@ -1102,7 +1160,8 @@
       "Terminál"
     ],
     "repositoryUrl": "https://github.com/bancsdan/GoKK",
-    "createdAtUtc": "2026-10-06T18:00:00.000Z"
+    "createdAtUtc": "2026-10-06T18:00:00.000Z",
+    "imageUrl": "https://raw.githubusercontent.com/bancsdan/GoKK/main/assets/demo.gif"
   },
   {
     "id": "22330801-4061-4801-3492-429371594238",
@@ -1126,7 +1185,8 @@
       "IoT"
     ],
     "repositoryUrl": "https://github.com/amaximus/fkf-garbage-collection",
-    "createdAtUtc": "2026-10-09T13:30:00.000Z"
+    "createdAtUtc": "2026-10-09T13:30:00.000Z",
+    "imageUrl": "https://raw.githubusercontent.com/amaximus/fkf-garbage-collection/master/fkf_alerted.png"
   },
   {
     "id": "33441912-5172-4912-45a3-53a4826a5339",
@@ -1150,7 +1210,8 @@
       "API"
     ],
     "repositoryUrl": "https://github.com/radaron/ncoreparser",
-    "createdAtUtc": "2026-09-19T10:00:00.000Z"
+    "createdAtUtc": "2026-09-19T10:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/b2a3715cc65858914cc716ea73e55ba6d665819396920ec7ba4fd003e6526a3c/radaron/ncoreparser"
   },
   {
     "id": "44552023-6283-4023-56b4-64b5937b643a",
@@ -1174,7 +1235,8 @@
       "Automatizáció"
     ],
     "repositoryUrl": "https://github.com/szabbenjamin/nCoreDownloader",
-    "createdAtUtc": "2026-09-21T15:00:00.000Z"
+    "createdAtUtc": "2026-09-21T15:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/ffbaec79941c4655b490cf2c0418c4ab87e63dc929854758956d0c4f0da82c86/szabbenjamin/nCoreDownloader"
   },
   {
     "id": "55663134-7394-4134-67c5-75c6a48c753b",
@@ -1198,7 +1260,8 @@
       "Retró"
     ],
     "repositoryUrl": "https://github.com/gabrielmicko/teveclub-feeder",
-    "createdAtUtc": "2026-08-18T12:00:00.000Z"
+    "createdAtUtc": "2026-08-18T12:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/d2a34a2fb2644d900554098038afe0e3a946d0d931e3b91dde999916fc4bd8b9/gabrielmicko/teveclub-feeder"
   },
   {
     "id": "66774245-84a5-4245-78d6-86d7b59d863c",
@@ -1223,7 +1286,8 @@
       "CLI"
     ],
     "repositoryUrl": "https://github.com/a-sync/mediaklikk-downloader",
-    "createdAtUtc": "2026-09-24T17:00:00.000Z"
+    "createdAtUtc": "2026-09-24T17:00:00.000Z",
+    "imageUrl": "https://user-images.githubusercontent.com/14183614/47254935-e779b300-d468-11e8-9e84-6cda4becd9b8.gif"
   },
   {
     "id": "77885356-95b6-4356-89e7-97e8c6ae973d",
@@ -1247,7 +1311,8 @@
       "Streaming"
     ],
     "repositoryUrl": "https://github.com/tiborbaksa/vlc-mediaklikk-video",
-    "createdAtUtc": "2026-09-26T14:00:00.000Z"
+    "createdAtUtc": "2026-09-26T14:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/cadee920aa65b412fc52b8ba169acf6e383bf9bcd5d918f62d1eebfa96f934ae/tiborbaksa/vlc-mediaklikk-video"
   },
   {
     "id": "88996467-a6c7-4467-9af8-a8f9d7bfa83e",
@@ -1271,7 +1336,8 @@
       "API Docs"
     ],
     "repositoryUrl": "https://github.com/bczsalba/ekreta-docs-v3",
-    "createdAtUtc": "2026-09-10T16:00:00.000Z"
+    "createdAtUtc": "2026-09-10T16:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/cb0908c0520150e3edd5ebcfc5994a32a315fc02d2780eea5b2fd554f0ae7319/bczsalba/ekreta-docs-v3"
   },
   {
     "id": "99aa7578-b7d8-4578-ab09-b90ae8c0b93f",
@@ -1296,7 +1362,8 @@
     ],
     "repositoryUrl": "https://github.com/szekelymilan/e-kreta-cli",
     "liveDemoUrl": "https://www.npmjs.com/package/e-kreta-cli",
-    "createdAtUtc": "2026-09-17T11:00:00.000Z"
+    "createdAtUtc": "2026-09-17T11:00:00.000Z",
+    "imageUrl": "https://raw.githubusercontent.com/szekelymilan/e-kreta-cli/master/static/banner.png"
   },
   {
     "id": "aabb8689-c8e9-4689-bc1a-ca1bf9d1ca40",
@@ -1321,7 +1388,8 @@
     ],
     "repositoryUrl": "https://github.com/blazsmaster/kreta.js",
     "liveDemoUrl": "https://npmjs.com/package/kreta.js",
-    "createdAtUtc": "2026-09-23T13:00:00.000Z"
+    "createdAtUtc": "2026-09-23T13:00:00.000Z",
+    "imageUrl": "https://i.imgur.com/Zz8viJd.png"
   },
   {
     "id": "bbcc9790-d9fa-4790-cd2b-db2c0ae2db41",
@@ -1345,7 +1413,8 @@
       "IoT"
     ],
     "repositoryUrl": "https://github.com/majorcs/kreta-homeassistant",
-    "createdAtUtc": "2026-10-04T16:00:00.000Z"
+    "createdAtUtc": "2026-10-04T16:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/153388d66410d424b1f5b36cdd4bd1ee6606b45c3de7ae49a658c807c5535fbc/majorcs/kreta-homeassistant"
   },
   {
     "id": "ccdd0801-ea0b-4801-de3c-ec3d1bf3ec42",
@@ -1369,7 +1438,8 @@
       "e-KRÉTA"
     ],
     "repositoryUrl": "https://github.com/csabagabor21/Summit",
-    "createdAtUtc": "2026-10-12T14:30:00.000Z"
+    "createdAtUtc": "2026-10-12T14:30:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/5e43601e1ad2a9dfbfc0b132b540d2e9a788cdee0e8d076eab61f900fc60278d/csabagabor21/Summit"
   },
   {
     "id": "ddee1912-fb1c-4912-ef4d-fd4e2c04fd43",
@@ -1392,7 +1462,8 @@
       "e-KRÉTA"
     ],
     "repositoryUrl": "https://github.com/mcitomi/kreta-atlag-szamito-ext",
-    "createdAtUtc": "2026-09-27T10:00:00.000Z"
+    "createdAtUtc": "2026-09-27T10:00:00.000Z",
+    "imageUrl": "https://i.imgur.com/0tNjVzz.png"
   },
   {
     "id": "eeff2023-0c2d-4023-f05e-0e5f3d150e44",
@@ -1416,7 +1487,8 @@
       "e-KRÉTA"
     ],
     "repositoryUrl": "https://github.com/bczsalba/asztal",
-    "createdAtUtc": "2026-08-30T16:00:00.000Z"
+    "createdAtUtc": "2026-08-30T16:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/d0920b9ec293198d68f3d25252dbcb6663759cb34c5f4e57143d013eecd1a6fc/bczsalba/asztal"
   },
   {
     "id": "ff003134-1d3e-4134-016f-1f604e261f45",
@@ -1441,7 +1513,8 @@
     ],
     "repositoryUrl": "https://github.com/bru02/eFilc",
     "liveDemoUrl": "https://www.bru02.tk/e-filc",
-    "createdAtUtc": "2026-09-03T12:00:00.000Z"
+    "createdAtUtc": "2026-09-03T12:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/dcd6d2710f1116d2c666084fc96bcb9db8b3db927ef85697c1578ce588be933c/bru02/eFilc"
   },
   {
     "id": "00114245-2e4f-4245-1270-20715f372046",
@@ -1466,7 +1539,8 @@
       "LLM"
     ],
     "repositoryUrl": "https://github.com/Szotasz/szamlazz-mcp",
-    "createdAtUtc": "2026-10-15T11:00:00.000Z"
+    "createdAtUtc": "2026-10-15T11:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/ee68b8e448745546e576f2744673c0c5984f8b792b6a3fe6a0b9882a86afabdd/Szotasz/szamlazz-mcp"
   },
   {
     "id": "11225356-3f50-4356-2381-318260483147",
@@ -1491,7 +1565,8 @@
       "LLM"
     ],
     "repositoryUrl": "https://github.com/Szotasz/billingo-mcp",
-    "createdAtUtc": "2026-10-16T15:00:00.000Z"
+    "createdAtUtc": "2026-10-16T15:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/f9b579a9e230db7320a7dfe92b5e8e58dbbd479d550c833fe911444661870102/Szotasz/billingo-mcp"
   },
   {
     "id": "22336467-4061-4467-3492-429371594248",
@@ -1515,7 +1590,8 @@
       "Testing"
     ],
     "repositoryUrl": "https://github.com/conedevelopment/simplepay-php",
-    "createdAtUtc": "2026-09-18T10:00:00.000Z"
+    "createdAtUtc": "2026-09-18T10:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/dcafc1650e4da6ac7402b89f11f9c306e7a10dba04e7381e3c3df9c8ab5374da/conedevelopment/simplepay-php"
   },
   {
     "id": "33447578-5172-4578-45a3-53a4826a5349",
@@ -1539,7 +1615,8 @@
       "API"
     ],
     "repositoryUrl": "https://github.com/theriverman/szamlazz.py",
-    "createdAtUtc": "2026-09-07T12:00:00.000Z"
+    "createdAtUtc": "2026-09-07T12:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/158cfb1b229bf3a290c8c0145900bd4362f34b518eea2c3717d54d339be7ad76/theriverman/szamlazz.py"
   },
   {
     "id": "44558689-6283-4689-56b4-64b5937b644a",
@@ -1564,7 +1641,8 @@
       "Composer"
     ],
     "repositoryUrl": "https://github.com/SzuniSOFT/php-mnb",
-    "createdAtUtc": "2026-09-13T14:00:00.000Z"
+    "createdAtUtc": "2026-09-13T14:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/69415a72f1f01eb60e56ae5167c563bd6596269c009a73e1fbfe36205393f1e5/SzuniSOFT/php-mnb"
   },
   {
     "id": "55669790-7394-4790-67c5-75c6a48c754b",
@@ -1588,7 +1666,8 @@
       "IoT"
     ],
     "repositoryUrl": "https://github.com/FabianGabor/HA-Idokep",
-    "createdAtUtc": "2026-10-07T16:00:00.000Z"
+    "createdAtUtc": "2026-10-07T16:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/01e7ad5ba57bd1cf67dda13e9ed4598a518895eb769f3950f0ca2d862bf05ae7/FabianGabor/HA-Idokep"
   },
   {
     "id": "66770801-84a5-4801-78d6-86d7b59d864c",
@@ -1613,7 +1692,8 @@
       "IoT"
     ],
     "repositoryUrl": "https://github.com/lorantkurthy/weewx-idokep",
-    "createdAtUtc": "2026-08-28T10:00:00.000Z"
+    "createdAtUtc": "2026-08-28T10:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/8ceeeabf3efde1568cb1d5d3f90b6c39fcf4ff7410f2fcff5023116483c8308c/lorantkurthy/weewx-idokep"
   },
   {
     "id": "77881912-95b6-4912-89e7-97e8c6ae974d",
@@ -1637,7 +1717,8 @@
       "TV Műsor"
     ],
     "repositoryUrl": "https://github.com/attus74/porthu",
-    "createdAtUtc": "2026-09-09T15:00:00.000Z"
+    "createdAtUtc": "2026-09-09T15:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/209654a360011fb3a49d5aacbc11ec779f746f3c7126409cc34fd016757efdff/attus74/porthu"
   },
   {
     "id": "88992023-a6c7-4023-9af8-a8f9d7bfa84e",
@@ -1662,7 +1743,8 @@
       "Forensics"
     ],
     "repositoryUrl": "https://github.com/CrySyS/ModXRef",
-    "createdAtUtc": "2026-08-22T13:00:00.000Z"
+    "createdAtUtc": "2026-08-22T13:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/fe83e08ed8a3b43c6e6d5a2b77165a69a7bf5589e52cf61bba0f8d82353510ae/CrySyS/ModXRef"
   },
   {
     "id": "99aa3134-b7d8-4134-ab09-b90ae8c0b94f",
@@ -1687,7 +1769,8 @@
       "IoT Security"
     ],
     "repositoryUrl": "https://github.com/markszabo/drone-hacking",
-    "createdAtUtc": "2026-09-01T15:00:00.000Z"
+    "createdAtUtc": "2026-09-01T15:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/d01c54b2fed4aafdc3728e88c486622df6ca0130556ef53e9249fdb9e0c24c44/markszabo/drone-hacking"
   },
   {
     "id": "aabb4245-c8e9-4245-bc1a-ca1bf9d1ca50",
@@ -1711,7 +1794,8 @@
       "Step Library"
     ],
     "repositoryUrl": "https://github.com/bitrise-io/stepman",
-    "createdAtUtc": "2026-09-03T11:00:00.000Z"
+    "createdAtUtc": "2026-09-03T11:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/5a24287ebb032a7dee9bb93a6a4a91dd9519977aa33f596bc94b54b518500321/bitrise-io/stepman"
   },
   {
     "id": "bbcc5356-d9fa-4356-cd2b-db2c0ae2db51",
@@ -1735,7 +1819,8 @@
       "Audio Processing"
     ],
     "repositoryUrl": "https://github.com/vargaviktor/primotools",
-    "createdAtUtc": "2026-08-12T10:00:00.000Z"
+    "createdAtUtc": "2026-08-12T10:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/8b696233d1a865221dd6e7151bb9cd86d5cc18a3ad7fed57ec711a073624d690/vargaviktor/primotools"
   },
   {
     "id": "ccdd6467-ea0b-4467-de3c-ec3d1bf3ec52",
@@ -1760,7 +1845,8 @@
       "Transit"
     ],
     "repositoryUrl": "https://github.com/KAMI911/GTFS2OSM",
-    "createdAtUtc": "2026-09-15T18:00:00.000Z"
+    "createdAtUtc": "2026-09-15T18:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/618cefab84196aec8c91c076bb0a07b3cea12e717c7be0bffba5cec036347dae/KAMI911/GTFS2OSM"
   },
   {
     "id": "ddee7578-fb1c-4578-ef4d-fd4e2c04fd53",
@@ -1785,7 +1871,8 @@
       "MÁV"
     ],
     "repositoryUrl": "https://github.com/dataroland/Train_Delays_Analysis",
-    "createdAtUtc": "2026-09-06T14:00:00.000Z"
+    "createdAtUtc": "2026-09-06T14:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/9fe97bde8a7f67abcb1e7121d98109dc29cfa2bb169ffd8bde1bf73383ae7a56/dataroland/Train_Delays_Analysis"
   },
   {
     "id": "eeff8689-0c2d-4689-f05e-0e5f3d150e54",
@@ -1809,7 +1896,8 @@
       "Közlekedés"
     ],
     "repositoryUrl": "https://github.com/MartinLangbecker/mav-prices",
-    "createdAtUtc": "2026-09-14T17:00:00.000Z"
+    "createdAtUtc": "2026-09-14T17:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/9703b682384957eedbd1f8f44e27bb0e0537f3c04beb8741518fa6f073dbbe56/MartinLangbecker/mav-prices"
   },
   {
     "id": "ff009790-1d3e-4790-016f-1f604e261f55",
@@ -1834,7 +1922,8 @@
     ],
     "repositoryUrl": "https://github.com/kir-dev/tanfolyam-docusaurus",
     "liveDemoUrl": "https://tanfolyam.kir-dev.hu",
-    "createdAtUtc": "2026-10-14T12:00:00.000Z"
+    "createdAtUtc": "2026-10-14T12:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/d192facbfb31d5bf1ce3410f68c8a4c5733bb66a099afc9e9c52cf163bd87a30/kir-dev/tanfolyam-docusaurus"
   },
   {
     "id": "00110801-2e4f-4801-1270-20715f372056",
@@ -1858,7 +1947,8 @@
       "PostgreSQL"
     ],
     "repositoryUrl": "https://github.com/kir-dev/szauna-web",
-    "createdAtUtc": "2026-09-27T16:00:00.000Z"
+    "createdAtUtc": "2026-09-27T16:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/38c3882603c8a4c4ba0628958184810a8d3bf556c057319eae6cc62005901b1d/kir-dev/szauna-web"
   },
   {
     "id": "11221912-3f50-4912-2381-318260483157",
@@ -1882,7 +1972,8 @@
       "Terminal"
     ],
     "repositoryUrl": "https://github.com/kir-dev/Kir-Console",
-    "createdAtUtc": "2026-09-12T17:00:00.000Z"
+    "createdAtUtc": "2026-09-12T17:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/e3dade2abaa882f5cf156cf0d8e614dcb55c3f58cf89141c740f5f8a1361a1dc/kir-dev/Kir-Console"
   },
   {
     "id": "22332023-4061-4023-3492-429371594258",
@@ -1906,7 +1997,8 @@
       "e-KRÉTA"
     ],
     "repositoryUrl": "https://github.com/daaniiieel/homie",
-    "createdAtUtc": "2026-10-11T12:00:00.000Z"
+    "createdAtUtc": "2026-10-11T12:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/8398dfaae2e695bd67cc625739262e62b917863600156f75660138661f862440/daaniiieel/homie"
   },
   {
     "id": "33443134-5172-4134-45a3-53a4826a5359",
@@ -1930,7 +2022,8 @@
       "Adatgyűjtés"
     ],
     "repositoryUrl": "https://github.com/Luxeonn/ingatlan-kereso",
-    "createdAtUtc": "2026-09-15T13:00:00.000Z"
+    "createdAtUtc": "2026-09-15T13:00:00.000Z",
+    "imageUrl": "https://repository-images.githubusercontent.com/94618159/bd4233a9-8a02-4915-81a5-f1e4b94b4704"
   },
   {
     "id": "44554245-6283-4245-56b4-64b5937b645a",
@@ -1955,7 +2048,8 @@
       "E-kereskedelem"
     ],
     "repositoryUrl": "https://github.com/WPPlugins/arukereso-megbizhato-bolt-integracio",
-    "createdAtUtc": "2026-08-25T11:00:00.000Z"
+    "createdAtUtc": "2026-08-25T11:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/f6c51ff1fb6a6a217dcaa652e572ef7da38d39a3659fa1fe25849822ae86b9ab/WPPlugins/arukereso-megbizhato-bolt-integracio"
   },
   {
     "id": "55665356-7394-4356-67c5-75c6a48c755b",
@@ -1980,7 +2074,8 @@
       "Budapest"
     ],
     "repositoryUrl": "https://github.com/tszereny/real_estate_machine_learning",
-    "createdAtUtc": "2026-09-02T16:00:00.000Z"
+    "createdAtUtc": "2026-09-02T16:00:00.000Z",
+    "imageUrl": "https://opengraph.githubassets.com/b4f2e9761dc5763f110c4f9842f64363f2923c2bb064ac0b6e07170f50e0cc91/tszereny/real_estate_machine_learning"
   },
   {
     "id": "1a7c5049-0f7b-4b4c-a70e-67a2bcb74513",
@@ -3018,7 +3113,7 @@
       "ASP.NET",
       "Oktatás"
     ],
-    "repositoryUrl": "https://github.com/elte-coder/iskolai-statisztika-c#-4",
+    "repositoryUrl": "https://github.com/elte-coder/iskolai-statisztika-csharp-4",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-08-07T22:35:19.433Z"
   },
@@ -3148,7 +3243,7 @@
       "PWA",
       "Diákok"
     ],
-    "repositoryUrl": "https://github.com/elte-coder/vizsga-felk-sz-t--vue 3-9",
+    "repositoryUrl": "https://github.com/elte-coder/vizsga-felk-sz-t--vue-3-9",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-08-10T13:05:19.433Z"
   },
@@ -3252,7 +3347,7 @@
       "ASP.NET",
       "Oktatás"
     ],
-    "repositoryUrl": "https://github.com/kreta-hackers/sulinet-eszk-z-c#-13",
+    "repositoryUrl": "https://github.com/kreta-hackers/sulinet-eszk-z-csharp-13",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-08-12T15:05:19.433Z"
   },
@@ -3382,7 +3477,7 @@
       "PWA",
       "Diákok"
     ],
-    "repositoryUrl": "https://github.com/kreta-hackers/kr-ta-seg-d-vue 3-18",
+    "repositoryUrl": "https://github.com/kreta-hackers/kr-ta-seg-d-vue-3-18",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-08-15T05:35:19.433Z"
   },
@@ -3486,7 +3581,7 @@
       "ASP.NET",
       "Oktatás"
     ],
-    "repositoryUrl": "https://github.com/tanarok-osszefogas/iskolai-statisztika-c#-22",
+    "repositoryUrl": "https://github.com/tanarok-osszefogas/iskolai-statisztika-csharp-22",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-08-17T07:35:19.433Z"
   },
@@ -3616,7 +3711,7 @@
       "PWA",
       "Diákok"
     ],
-    "repositoryUrl": "https://github.com/tanarok-osszefogas/vizsga-felk-sz-t--vue 3-27",
+    "repositoryUrl": "https://github.com/tanarok-osszefogas/vizsga-felk-sz-t--vue-3-27",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-08-19T22:05:19.433Z"
   },
@@ -3720,7 +3815,7 @@
       "ASP.NET",
       "Oktatás"
     ],
-    "repositoryUrl": "https://github.com/corvinus-hallgato/sulinet-eszk-z-c#-31",
+    "repositoryUrl": "https://github.com/corvinus-hallgato/sulinet-eszk-z-csharp-31",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-08-22T00:05:19.433Z"
   },
@@ -3850,7 +3945,7 @@
       "PWA",
       "Diákok"
     ],
-    "repositoryUrl": "https://github.com/corvinus-hallgato/kr-ta-seg-d-vue 3-36",
+    "repositoryUrl": "https://github.com/corvinus-hallgato/kr-ta-seg-d-vue-3-36",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-08-24T14:35:19.434Z"
   },
@@ -3954,7 +4049,7 @@
       "ASP.NET",
       "Oktatás"
     ],
-    "repositoryUrl": "https://github.com/sch-infokor/iskolai-statisztika-c#-40",
+    "repositoryUrl": "https://github.com/sch-infokor/iskolai-statisztika-csharp-40",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-08-26T16:35:19.434Z"
   },
@@ -4084,7 +4179,7 @@
       "PWA",
       "Diákok"
     ],
-    "repositoryUrl": "https://github.com/sch-infokor/vizsga-felk-sz-t--vue 3-45",
+    "repositoryUrl": "https://github.com/sch-infokor/vizsga-felk-sz-t--vue-3-45",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-08-29T07:05:19.434Z"
   },
@@ -4188,7 +4283,7 @@
       "ASP.NET",
       "Oktatás"
     ],
-    "repositoryUrl": "https://github.com/elte-coder/sulinet-eszk-z-c#-49",
+    "repositoryUrl": "https://github.com/elte-coder/sulinet-eszk-z-csharp-49",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-08-31T09:05:19.434Z"
   },
@@ -4318,7 +4413,7 @@
       "PWA",
       "Diákok"
     ],
-    "repositoryUrl": "https://github.com/elte-coder/kr-ta-seg-d-vue 3-54",
+    "repositoryUrl": "https://github.com/elte-coder/kr-ta-seg-d-vue-3-54",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-09-02T23:35:19.434Z"
   },
@@ -4422,7 +4517,7 @@
       "ASP.NET",
       "Oktatás"
     ],
-    "repositoryUrl": "https://github.com/kreta-hackers/iskolai-statisztika-c#-58",
+    "repositoryUrl": "https://github.com/kreta-hackers/iskolai-statisztika-csharp-58",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-09-05T01:35:19.434Z"
   },
@@ -5020,7 +5115,7 @@
       "OpenStreetMap",
       "GIS"
     ],
-    "repositoryUrl": "https://github.com/volan-tools/menetrend-radar-vue 3-2",
+    "repositoryUrl": "https://github.com/volan-tools/menetrend-radar-vue-3-2",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-09-17T01:05:19.434Z"
   },
@@ -5098,7 +5193,7 @@
       "OpenStreetMap",
       "GIS"
     ],
-    "repositoryUrl": "https://github.com/debrecen-smartcity/forgalmi-seg-d-vue 3-5",
+    "repositoryUrl": "https://github.com/debrecen-smartcity/forgalmi-seg-d-vue-3-5",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-09-18T14:35:19.434Z"
   },
@@ -5176,7 +5271,7 @@
       "OpenStreetMap",
       "GIS"
     ],
-    "repositoryUrl": "https://github.com/magyar-utak/menetrend-radar-vue 3-8",
+    "repositoryUrl": "https://github.com/magyar-utak/menetrend-radar-vue-3-8",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-09-20T04:05:19.434Z"
   },
@@ -5254,7 +5349,7 @@
       "OpenStreetMap",
       "GIS"
     ],
-    "repositoryUrl": "https://github.com/mav-hacks/forgalmi-seg-d-vue 3-11",
+    "repositoryUrl": "https://github.com/mav-hacks/forgalmi-seg-d-vue-3-11",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-09-21T17:35:19.434Z"
   },
@@ -5332,7 +5427,7 @@
       "OpenStreetMap",
       "GIS"
     ],
-    "repositoryUrl": "https://github.com/volan-tools/menetrend-radar-vue 3-14",
+    "repositoryUrl": "https://github.com/volan-tools/menetrend-radar-vue-3-14",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-09-23T07:05:19.434Z"
   },
@@ -5410,7 +5505,7 @@
       "OpenStreetMap",
       "GIS"
     ],
-    "repositoryUrl": "https://github.com/debrecen-smartcity/forgalmi-seg-d-vue 3-17",
+    "repositoryUrl": "https://github.com/debrecen-smartcity/forgalmi-seg-d-vue-3-17",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-09-24T20:35:19.434Z"
   },
@@ -5488,7 +5583,7 @@
       "OpenStreetMap",
       "GIS"
     ],
-    "repositoryUrl": "https://github.com/magyar-utak/menetrend-radar-vue 3-20",
+    "repositoryUrl": "https://github.com/magyar-utak/menetrend-radar-vue-3-20",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-09-26T10:05:19.435Z"
   },
@@ -5566,7 +5661,7 @@
       "OpenStreetMap",
       "GIS"
     ],
-    "repositoryUrl": "https://github.com/mav-hacks/forgalmi-seg-d-vue 3-23",
+    "repositoryUrl": "https://github.com/mav-hacks/forgalmi-seg-d-vue-3-23",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-09-27T23:35:19.435Z"
   },
@@ -5644,7 +5739,7 @@
       "OpenStreetMap",
       "GIS"
     ],
-    "repositoryUrl": "https://github.com/volan-tools/menetrend-radar-vue 3-26",
+    "repositoryUrl": "https://github.com/volan-tools/menetrend-radar-vue-3-26",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-09-29T13:05:19.435Z"
   },
@@ -5722,7 +5817,7 @@
       "OpenStreetMap",
       "GIS"
     ],
-    "repositoryUrl": "https://github.com/debrecen-smartcity/forgalmi-seg-d-vue 3-29",
+    "repositoryUrl": "https://github.com/debrecen-smartcity/forgalmi-seg-d-vue-3-29",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-10-01T02:35:19.435Z"
   },
@@ -5800,7 +5895,7 @@
       "OpenStreetMap",
       "GIS"
     ],
-    "repositoryUrl": "https://github.com/magyar-utak/menetrend-radar-vue 3-32",
+    "repositoryUrl": "https://github.com/magyar-utak/menetrend-radar-vue-3-32",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-10-02T16:05:19.435Z"
   },
@@ -5878,7 +5973,7 @@
       "OpenStreetMap",
       "GIS"
     ],
-    "repositoryUrl": "https://github.com/mav-hacks/forgalmi-seg-d-vue 3-35",
+    "repositoryUrl": "https://github.com/mav-hacks/forgalmi-seg-d-vue-3-35",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-10-04T05:35:19.435Z"
   },
@@ -5956,7 +6051,7 @@
       "OpenStreetMap",
       "GIS"
     ],
-    "repositoryUrl": "https://github.com/volan-tools/menetrend-radar-vue 3-38",
+    "repositoryUrl": "https://github.com/volan-tools/menetrend-radar-vue-3-38",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-10-05T19:05:19.435Z"
   },
@@ -6034,7 +6129,7 @@
       "OpenStreetMap",
       "GIS"
     ],
-    "repositoryUrl": "https://github.com/debrecen-smartcity/forgalmi-seg-d-vue 3-41",
+    "repositoryUrl": "https://github.com/debrecen-smartcity/forgalmi-seg-d-vue-3-41",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-10-07T08:35:19.435Z"
   },
@@ -6112,7 +6207,7 @@
       "OpenStreetMap",
       "GIS"
     ],
-    "repositoryUrl": "https://github.com/magyar-utak/menetrend-radar-vue 3-44",
+    "repositoryUrl": "https://github.com/magyar-utak/menetrend-radar-vue-3-44",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-10-08T22:05:19.435Z"
   },
@@ -6190,7 +6285,7 @@
       "OpenStreetMap",
       "GIS"
     ],
-    "repositoryUrl": "https://github.com/mav-hacks/forgalmi-seg-d-vue 3-47",
+    "repositoryUrl": "https://github.com/mav-hacks/forgalmi-seg-d-vue-3-47",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-10-10T11:35:19.435Z"
   },
@@ -6268,7 +6363,7 @@
       "OpenStreetMap",
       "GIS"
     ],
-    "repositoryUrl": "https://github.com/volan-tools/menetrend-radar-vue 3-50",
+    "repositoryUrl": "https://github.com/volan-tools/menetrend-radar-vue-3-50",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-10-12T01:05:19.435Z"
   },
@@ -6346,7 +6441,7 @@
       "OpenStreetMap",
       "GIS"
     ],
-    "repositoryUrl": "https://github.com/debrecen-smartcity/forgalmi-seg-d-vue 3-53",
+    "repositoryUrl": "https://github.com/debrecen-smartcity/forgalmi-seg-d-vue-3-53",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-10-13T14:35:19.435Z"
   },
@@ -6424,7 +6519,7 @@
       "OpenStreetMap",
       "GIS"
     ],
-    "repositoryUrl": "https://github.com/magyar-utak/menetrend-radar-vue 3-56",
+    "repositoryUrl": "https://github.com/magyar-utak/menetrend-radar-vue-3-56",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-10-15T04:05:19.435Z"
   },
@@ -6502,7 +6597,7 @@
       "OpenStreetMap",
       "GIS"
     ],
-    "repositoryUrl": "https://github.com/mav-hacks/forgalmi-seg-d-vue 3-59",
+    "repositoryUrl": "https://github.com/mav-hacks/forgalmi-seg-d-vue-3-59",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-10-16T17:35:19.435Z"
   },
@@ -6580,7 +6675,7 @@
       "OpenStreetMap",
       "GIS"
     ],
-    "repositoryUrl": "https://github.com/volan-tools/menetrend-radar-vue 3-62",
+    "repositoryUrl": "https://github.com/volan-tools/menetrend-radar-vue-3-62",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-10-18T07:05:19.435Z"
   },
@@ -6658,7 +6753,7 @@
       "OpenStreetMap",
       "GIS"
     ],
-    "repositoryUrl": "https://github.com/debrecen-smartcity/forgalmi-seg-d-vue 3-65",
+    "repositoryUrl": "https://github.com/debrecen-smartcity/forgalmi-seg-d-vue-3-65",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-10-19T20:35:19.435Z"
   },
@@ -6736,7 +6831,7 @@
       "OpenStreetMap",
       "GIS"
     ],
-    "repositoryUrl": "https://github.com/magyar-utak/menetrend-radar-vue 3-68",
+    "repositoryUrl": "https://github.com/magyar-utak/menetrend-radar-vue-3-68",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-10-21T10:05:19.435Z"
   },
@@ -6814,7 +6909,7 @@
       "OpenStreetMap",
       "GIS"
     ],
-    "repositoryUrl": "https://github.com/mav-hacks/forgalmi-seg-d-vue 3-71",
+    "repositoryUrl": "https://github.com/mav-hacks/forgalmi-seg-d-vue-3-71",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-10-22T23:35:19.435Z"
   },
@@ -6892,7 +6987,7 @@
       "OpenStreetMap",
       "GIS"
     ],
-    "repositoryUrl": "https://github.com/volan-tools/menetrend-radar-vue 3-74",
+    "repositoryUrl": "https://github.com/volan-tools/menetrend-radar-vue-3-74",
     "liveDemoUrl": null,
     "createdAtUtc": "2025-10-24T13:05:19.435Z"
   },
