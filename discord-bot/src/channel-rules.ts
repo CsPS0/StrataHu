@@ -17,6 +17,9 @@ export async function applyAllChannelPermissions(guild: Guild): Promise<void> {
 
   const everyoneRole = guild.roles.everyone;
   const adminRole = roles.find((r) => r.name === 'Alapító / Admin');
+  const founderTagRole = roles.find((r) => r.name === 'Alapító Tag');
+  const mentorRole = roles.find((r) => r.name === 'Mentor / Szakértő');
+  const incubatedRole = roles.find((r) => r.name === 'Inkubált Projekt');
   const modRole = roles.find((r) => r.name === 'Moderátor');
   const botOpRole = roles.find((r) => r.name === 'Strata AI Operátor');
   const verifiedTagRole = roles.find((r) => r.name === 'Hitelesített Tag');
@@ -102,6 +105,53 @@ export async function applyAllChannelPermissions(guild: Guild): Promise<void> {
       continue;
     }
 
+    // 1B. ZÁRT ALAPÍTÓI, JOGI ÉS B2G TÁRGYALÓ SZOBÁK
+    if (
+      ch.name.includes('kormányzati-és-b2g') ||
+      ch.name.includes('jogi-és-szervezeti') ||
+      ch.name.includes('Alapítói Tárgyaló')
+    ) {
+      console.log(`  🏛️ Alapítói/B2G/Jogi védelem: #${ch.name}`);
+      const founderAllowedRoles = [
+        adminRole.id,
+        modRole.id,
+        botOpRole.id,
+        ...(founderTagRole ? [founderTagRole.id] : []),
+        ...(mentorRole ? [mentorRole.id] : []),
+        ...(ch.name.includes('kormányzati') || ch.name.includes('Tárgyaló')
+          ? incubatedRole
+            ? [incubatedRole.id]
+            : []
+          : [])
+      ];
+
+      const overwrites: any[] = [
+        {
+          id: everyoneRole.id,
+          deny: [PermissionFlagsBits.ViewChannel]
+        }
+      ];
+
+      for (const rId of founderAllowedRoles) {
+        overwrites.push({
+          id: rId,
+          allow:
+            ch.type === ChannelType.GuildVoice
+              ? [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.Connect, PermissionFlagsBits.Speak]
+              : [
+                  PermissionFlagsBits.ViewChannel,
+                  PermissionFlagsBits.SendMessages,
+                  PermissionFlagsBits.ReadMessageHistory,
+                  PermissionFlagsBits.AttachFiles,
+                  PermissionFlagsBits.EmbedLinks
+                ]
+        });
+      }
+
+      await ch.permissionOverwrites.set(overwrites);
+      continue;
+    }
+
     // 2. TÁJÉKOZTATÓ & HIVATALOS CSATORNÁK (Read-Only a tagoknak, Staff/Bot írhat)
     if (
       ch.name.includes('üdvözlet') ||
@@ -111,7 +161,8 @@ export async function applyAllChannelPermissions(guild: Guild): Promise<void> {
       ch.name.includes('bot-útmutató') ||
       ch.name.includes('bejelentések') ||
       ch.name.includes('hasznos-linkek') ||
-      ch.name.includes('hét-projektje')
+      ch.name.includes('hét-projektje') ||
+      ch.name.includes('alapítási-terv')
     ) {
       console.log(`  📢 Olvasási jog és védelem: #${ch.name}`);
       await ch.permissionOverwrites.set([
@@ -538,5 +589,50 @@ export async function postAllChannelRulesets(guild: Guild): Promise<void> {
     const sent = await newStaff.send({ embeds: [staffEmbed] });
     await sent.pin().catch(() => {});
     console.log('  ✓ Staff szoba sikeresen létrehozva és beállítva!');
+  }
+
+  // 8. Kormányzati & B2G Tárgyalások munkaszoba pin
+  const b2gCh = channels.find((c) => c && c.isTextBased() && c.name.includes('kormányzati-és-b2g')) as TextChannel | undefined;
+  if (b2gCh) {
+    const msgs = await b2gCh.messages.fetch({ limit: 10 });
+    const hasCard = msgs.some((m) => m.embeds.some((e) => e.title?.includes('B2G & Állami Pilot')));
+    if (!hasCard) {
+      const embed = new EmbedBuilder()
+        .setTitle('🏛️ B2G & Állami Pilot Tárgyalási Központ')
+        .setColor(0x00565b)
+        .setDescription(
+          'Zárt munkaszoba az **Alapító Tagok**, **Mentorok** és **Inkubált Projektek** részére.\n\n' +
+          '🎯 **Munkamenet az intézményi/kormányzati pilotokhoz (pl. Firka / Pala):**\n' +
+          '1️⃣ Adatok összegyűjtése (aktív felhasználók, betöltési sebesség, esettanulmány).\n' +
+          '2️⃣ Hivatalos API, GDPR és WCAG akadálymentességi audit elvégzése.\n' +
+          '3️⃣ Kockázatmentes **90 napos Pilot ajánlat** kiküldése 1–3 nyitott iskolának (`02_KORMANYZATI_ES_B2G_PITCH_SABLON.md`).\n' +
+          '4️⃣ Sikeres pilot eredményekkel központi (DMÜ / minisztériumi / tankerületi) egyeztetés.'
+        )
+        .setFooter({ text: 'StrataHu B2G Stratégia • Bizalmas' });
+      const msg = await b2gCh.send({ embeds: [embed] });
+      await msg.pin().catch(() => {});
+    }
+  }
+
+  // 9. Jogi és Szervezeti Műhely pin
+  const legalCh = channels.find((c) => c && c.isTextBased() && c.name.includes('jogi-és-szervezeti')) as TextChannel | undefined;
+  if (legalCh) {
+    const msgs = await legalCh.messages.fetch({ limit: 10 });
+    const hasCard = msgs.some((m) => m.embeds.some((e) => e.title?.includes('Alapítási Jogi Útmutató')));
+    if (!hasCard) {
+      const embed = new EmbedBuilder()
+        .setTitle('⚖️ Alapítási Jogi Útmutató & Szervezetépítés (0 Ft)')
+        .setColor(0x6a55fa)
+        .setDescription(
+          'Zárt műhely a szervezet megalapításához szükséges jogi, pénzügyi és pályázati teendőkhöz.\n\n' +
+          '• **1. lépés — Egyesület (0 Ft törvényi tőke):** Min. 10 alapító tag, civil nyilvántartásba vétel a Törvényszéken.\n' +
+          '• **2. lépés — HSUP Pályázat:** Egyetemista tagokkal ösztöndíj (havi ~50–65e Ft/fő, Top 15: 1M Ft/fő).\n' +
+          '• **3. lépés — Általános Szövetkezet / Kft.:** Az első kereskedelmi / pilot bevételekből, ügyvédi ellenjegyzéssel.\n\n' +
+          '📄 Sablonok a GitHub repó `docs/` mappájában érhetők el!'
+        )
+        .setFooter({ text: 'StrataHu Jogi & Szervezeti Műhely' });
+      const msg = await legalCh.send({ embeds: [embed] });
+      await msg.pin().catch(() => {});
+    }
   }
 }

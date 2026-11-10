@@ -3,7 +3,7 @@ import { TAKEDOWN_CONTACT_EMAIL } from '../services/api';
 
 const emit = defineEmits<{
   selectCategory: [category: string];
-  switchView: [view: 'explore' | 'tierlist' | 'top10'];
+  switchView: [view: 'explore' | 'tierlist' | 'top10' | 'incubator'];
   openSubmitModal: [];
 }>();
 
@@ -110,6 +110,15 @@ const quickCategories = [
                 @click="emit('switchView', 'top10')"
               >
                 Top 10 Magyar Fejlesztés
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                class="cursor-pointer text-[#b0c1d4] transition-colors hover:text-white hover:underline"
+                @click="emit('switchView', 'incubator')"
+              >
+                Alapítás &amp; Inkubátor (0 Ft)
               </button>
             </li>
             <li>

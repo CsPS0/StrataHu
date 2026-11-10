@@ -19,6 +19,9 @@ export interface RoleDefinition {
 // 1. Rendszer- és adminisztrátori szerepkörök (SZIGORÚAN EMOJIK NÉLKÜL)
 export const SYSTEM_ROLES: RoleDefinition[] = [
   { name: 'Alapító / Admin', color: 0xf59e0b, hoist: true, mentionable: true },
+  { name: 'Alapító Tag', color: 0xd93b00, hoist: true, mentionable: true },
+  { name: 'Mentor / Szakértő', color: 0x6a55fa, hoist: true, mentionable: true },
+  { name: 'Inkubált Projekt', color: 0x00565b, hoist: true, mentionable: true },
   { name: 'Moderátor', color: 0x3b82f6, hoist: true, mentionable: true },
   { name: 'Strata AI Operátor', color: 0x6366f1, hoist: true, mentionable: true },
   { name: 'Kiemelt Fejlesztő', color: 0xec4899, hoist: true, mentionable: true },
@@ -103,6 +106,22 @@ export const INTEREST_ROLES: RoleDefinition[] = [
     mentionable: true,
     emojiIcon: '🔔',
     description: 'Értesítések új beküldött és kiemelt magyar projektekről'
+  },
+  {
+    name: 'Üzlet / Pályázat / B2G',
+    color: 0x0ea5e9,
+    hoist: false,
+    mentionable: false,
+    emojiIcon: '💼',
+    description: 'Értékesítés, iskolai/állami kapcsolatok, HSUP, szövetkezet-alapítás'
+  },
+  {
+    name: 'Kód Review & Biztonság',
+    color: 0x10b981,
+    hoist: false,
+    mentionable: false,
+    emojiIcon: '🛡️',
+    description: 'GDPR megfelelőség, biztonsági audit és kódminőség ellenőrzés'
   }
 ];
 
@@ -288,5 +307,56 @@ export function createBotsDirectoryPayload() {
   return {
     embeds: [embed],
     components: [row1, row2]
+  };
+}
+
+export function createFoundingCenterPayload() {
+  const embed = new EmbedBuilder()
+    .setTitle('🏛️ StrataHu Szövetkezet & Inkubátor — Alapítási Központ')
+    .setColor(0xd93b00)
+    .setDescription(
+      'Célunk egy olyan **magyar fejlesztői közösségi szövetkezet és inkubátor** létrehozása, amely **0 Ft előleggel** karolja fel a hazai diák- és független projekteket (pl. *Firka*, *Pala*), jogi és biztonsági hátteret ad nekik, majd kiviszi őket a nagyvállalati (B2B) és állami/oktatási (B2G) piacra!\n\n' +
+      '### 🪜 Hogyan építjük fel tőke nélkül?\n' +
+      '**0. Fázis (Aktív):** Közösségi validáció a StrataHu Piactéren és Discordon.\n' +
+      '**1. Fázis (0 Ft alaptőke):** Minimum **10 alapító taggal** egy civil **Egyesület** (0 Ft törvényi tőke) + egyetemi **HSUP ösztöndíj** és pályázati bevételek indítása.\n' +
+      '**2. Fázis (Nagypiac & B2G):** Kockázatmentes **90 napos iskolai/intézményi pilotok** (GDPR, WCAG, hivatalos API audit után), majd teljes értékű **Szövetkezet / Projektcég** alapítása az első megrendelésekből.\n\n' +
+      '### 💰 Sikerdíjas Modell (Zero-Upfront)\n' +
+      '• A fejlesztőknek **ingyenes** a csatlakozás és az inkubáció.\n' +
+      '• Ha a szervezet értékesíti vagy támogatja a szoftvert, a bevétel **75–85%-a a fejlesztőké**, **15–25%-a pedig az inkubátor alapé**.'
+    )
+    .addFields(
+      {
+        name: '👥 Kiket keresünk az Alapító Magcsapatba?',
+        value:
+          '• **Senior Mentorok & Kód Reviewer-ek** (biztonsági audit, architektúra)\n' +
+          '• **Üzleti / B2G & Pályázati Társak** (iskolai pilot, HSUP, értékesítés)\n' +
+          '• **Jogi / GDPR Érdeklődők** (alapszabály, IP megállapodás)\n' +
+          '• **Saját projekttel rendelkező fejlesztők** (pl. oktatás, AI, DevOps)',
+        inline: false
+      }
+    )
+    .setFooter({ text: 'StrataHu • Alapításra Kész Inkubációs Központ' })
+    .setTimestamp();
+
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setCustomId('open_founder_application_modal')
+      .setLabel('Jelentkezek Alapító Társnak')
+      .setStyle(ButtonStyle.Primary)
+      .setEmoji('🤝'),
+    new ButtonBuilder()
+      .setCustomId('open_incubator_application_modal')
+      .setLabel('Projektem Inkubálását Kérem')
+      .setStyle(ButtonStyle.Success)
+      .setEmoji('🚀'),
+    new ButtonBuilder()
+      .setLabel('Sablonok & Terv (GitHub)')
+      .setStyle(ButtonStyle.Link)
+      .setURL('https://github.com/CsPS0/StrataHu/tree/main/docs')
+  );
+
+  return {
+    embeds: [embed],
+    components: [row]
   };
 }

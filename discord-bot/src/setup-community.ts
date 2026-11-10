@@ -56,6 +56,8 @@ export async function setupCommunity(guild: Guild) {
   const teammatesCh = getCh('csapattárs-kereső');
   const offtopicCh = getCh('offtopic');
   const ideasCh = getCh('ötletelés');
+  const foundingCh = getCh('alapítási-terv-és-társak');
+  const incForumCh = getCh('inkubátor-pályázatok');
 
   // 2. Üdvözlő képernyő (Welcome Screen) konfigurálása
   console.log('\n2. Üdvözlő képernyő (Welcome Screen) beállítása...');
@@ -93,6 +95,7 @@ export async function setupCommunity(guild: Guild) {
   const aiRole = getRole('AI / Adattudomány');
   const studentRole = getRole('Diák / Pályakezdő');
   const notifyRole = getRole('Projekt Értesítések');
+  const bizRole = getRole('Üzlet / Pályázat / B2G');
 
   const defaultChannelIds = [
     rulesCh?.id,
@@ -106,7 +109,9 @@ export async function setupCommunity(guild: Guild) {
     starProjCh?.id,
     devHelpCh?.id,
     forumCh?.id,
-    devForumCh?.id
+    devForumCh?.id,
+    foundingCh?.id,
+    incForumCh?.id
   ].filter(Boolean) as string[];
 
   const onboardingPayload = {
@@ -207,7 +212,15 @@ export async function setupCommunity(guild: Guild) {
             description: 'Saját app vagy csomag beküldése és promóciója',
             emoji_name: '📦',
             role_ids: [],
-            channel_ids: [forumCh?.id, ideasCh?.id].filter(Boolean) as string[]
+            channel_ids: [forumCh?.id, ideasCh?.id, incForumCh?.id].filter(Boolean) as string[]
+          },
+          {
+            id: generateSnowflake(),
+            title: 'Szövetkezet alapítás & B2G Inkubátor',
+            description: 'Csatlakozás az alapítói csapathoz és piacra vitelhez',
+            emoji_name: '🏛️',
+            role_ids: bizRole ? [bizRole.id] : [],
+            channel_ids: [foundingCh?.id, incForumCh?.id].filter(Boolean) as string[]
           }
         ]
       }

@@ -15,6 +15,7 @@ import { getDiscordConfig } from './config';
 import {
   ALL_ROLES,
   createBotsDirectoryPayload,
+  createFoundingCenterPayload,
   createRoleSelectorPayload,
   createVerificationPayload
 } from './roles';
@@ -150,6 +151,43 @@ const SERVER_STRUCTURE: CategorySpec[] = [
       {
         name: '❓・fejlesztői-segítség',
         topic: 'Gyors kérdések és válaszok: Vue 3, .NET, Rust, Go, Python, Flutter, Docker.'
+      }
+    ]
+  },
+  {
+    name: '🏛️ │ ALAPÍTÁS & INKUBÁTOR',
+    channels: [
+      {
+        name: '📋・alapítási-terv-és-társak',
+        topic: 'A StrataHu Szövetkezet / Egyesület 0 Ft-os alapítási terve és alapítótárs-toborzás.',
+        readOnly: true
+      },
+      {
+        name: '🚀・inkubátor-pályázatok',
+        type: ChannelType.GuildForum,
+        topic: 'Ide küldd be a piacra vitelre szánt magyar projektedet (pl. Firka, Pala, B2B/B2G eszközök)!',
+        sortOrder: SortOrderType.LatestActivity,
+        forumLayout: ForumLayoutType.ListView,
+        tags: [
+          { name: 'MVP Kész', emoji: { name: '✅' } },
+          { name: 'Oktatás / B2G', emoji: { name: '🎓' } },
+          { name: 'KKV / B2B', emoji: { name: '💼' } },
+          { name: '90 Napos Pilot', emoji: { name: '🧪' } },
+          { name: 'Biztonsági Audit', emoji: { name: '🛡️' } },
+          { name: 'Társat Keres', emoji: { name: '🤝' } }
+        ]
+      },
+      {
+        name: '🏛️・kormányzati-és-b2g-tárgyalások',
+        topic: 'Állami, minisztériumi, DMÜ, tankerületi és iskolai pilot-tárgyalások előkészítése.'
+      },
+      {
+        name: '⚖️・jogi-és-szervezeti-műhely',
+        topic: 'Egyesület (0 Ft), HSUP pályázatok, Szövetkezet alapítás, GDPR, IBTV és IP megállapodások.'
+      },
+      {
+        name: '🏛️・Alapítói Tárgyaló',
+        type: ChannelType.GuildVoice
       }
     ]
   },
@@ -433,6 +471,27 @@ export async function setupServer(targetGuildId?: string): Promise<void> {
                 message: { embeds: [guideEmbed] }
               });
               await thread.pin();
+            } else if (chSpec.name.includes('inkubátor-pályázatok')) {
+              console.log(`      🚀 Inkubátor fórum útmutató közzététele...`);
+              const guideEmbed = new EmbedBuilder()
+                .setTitle('🚀 Inkubátor Pályázatok — Hogyan vigyük nagypiacra a projektedet?')
+                .setColor(0xd93b00)
+                .setDescription(
+                  'Van egy már működő magyar diákprojekted vagy szoftvered (pl. *Firka*, *Pala*, oktatási/KKV eszköz), amit szívesen látnál cégeknél, iskolákban vagy akár országos pilotban?\n\n' +
+                  '💡 **Használd a `/inkubacio` parancsot vagy nyiss új posztot az alábbi mintával:**\n' +
+                  '• **Projekt neve & Repó:** `pl. Firka — https://github.com/...`\n' +
+                  '• **Mit csinál / Miért jobb?** `Melyik elavult megoldást váltja ki?`\n' +
+                  '• **Eddigi eredmények:** `Aktív diákok / letöltések / értékelések`\n' +
+                  '• **Miben kell a Szövetkezet segítsége?** `Jogi háttér / GDPR audit / Iskolai vagy Kormányzati tárgyalás / Mentorálás`\n\n' +
+                  '⚖️ **Költség:** **0 Ft előleg**, a közös bevételből **75–85% a fejlesztő csapaté**!'
+                )
+                .setFooter({ text: 'StrataHu Közösségi Inkubátor' });
+
+              const thread = await channel.threads.create({
+                name: '📌 Útmutató: Így add be a projekted az Inkubátorba (0 Ft előleg)',
+                message: { embeds: [guideEmbed] }
+              });
+              await thread.pin();
             }
           }
         }
@@ -544,6 +603,18 @@ export async function setupServer(targetGuildId?: string): Promise<void> {
           if (messages.size === 0) {
             console.log(`      🤖 Ajánlott botok tárháza közzététele...`);
             const payload = createBotsDirectoryPayload();
+            await textCh.send(payload);
+          }
+        }
+
+        // Kezdő üzenetek: Alapítási Terv & Inkubátor Központ
+        if (chSpec.name === '📋・alapítási-terv-és-társak' && channel.type === ChannelType.GuildText) {
+          const textCh = channel as TextChannel;
+          const messages = await textCh.messages.fetch({ limit: 5 });
+          const hasCenter = messages.some((m) => m.embeds.some((e) => e.title?.includes('Alapítási Központ')));
+          if (!hasCenter) {
+            console.log(`      🏛️ Alapítási központ és interaktív jelentkezés közzététele...`);
+            const payload = createFoundingCenterPayload();
             await textCh.send(payload);
           }
         }

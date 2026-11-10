@@ -5,16 +5,21 @@ import {
   Client,
   Colors,
   EmbedBuilder,
+  ForumChannel,
   GatewayIntentBits,
+  ModalBuilder,
+  PermissionFlagsBits,
   REST,
   Routes,
   SlashCommandBuilder,
-  TextChannel
+  TextChannel,
+  TextInputBuilder,
+  TextInputStyle
 } from 'discord.js';
 import fs from 'fs';
 import path from 'path';
 import { getDiscordConfig } from './config';
-import { createRoleSelectorPayload, INTEREST_ROLES } from './roles';
+import { createFoundingCenterPayload, createRoleSelectorPayload, INTEREST_ROLES } from './roles';
 import { checkGitHubUpdates } from './github-tracker';
 
 function getCatalogProjects(): any[] {
@@ -61,6 +66,12 @@ const commands = [
     .setName('szerepkorok')
     .setDescription('Érdeklődési körök és fejlesztői szerepkörök beállítása a profilodhoz'),
   new SlashCommandBuilder()
+    .setName('alapitas')
+    .setDescription('Szövetkezet & Egyesület alapítási terv (0 Ft), HSUP és alapítótárs jelentkezés'),
+  new SlashCommandBuilder()
+    .setName('inkubacio')
+    .setDescription('Projekt beküldése az Inkubátorba piacra vitelhez (pl. Firka, Pala, B2B/B2G)'),
+  new SlashCommandBuilder()
     .setName('segitseg')
     .setDescription('A StrataHu Bot funkcióinak, szerepköreinek és csatornáinak bemutatása'),
   new SlashCommandBuilder()
@@ -89,6 +100,82 @@ async function registerCommands(config: ReturnType<typeof getDiscordConfig>) {
   } catch (err: any) {
     console.warn('Slash parancs regisztráció figyelmeztetés:', err.message);
   }
+}
+
+function buildFounderModal(): ModalBuilder {
+  const modal = new ModalBuilder()
+    .setCustomId('founder_application_modal')
+    .setTitle('Alapító Társ / Mentor Jelentkezés');
+
+  const roleInput = new TextInputBuilder()
+    .setCustomId('founder_role')
+    .setLabel('Milyen szerepkörben segítenél?')
+    .setPlaceholder('pl. Lead Fejlesztő / Mentor, Üzlet & B2G, Jog / GDPR, HSUP Pályázat')
+    .setStyle(TextInputStyle.Short)
+    .setRequired(true);
+
+  const experienceInput = new TextInputBuilder()
+    .setCustomId('founder_experience')
+    .setLabel('Tapasztalat & Miért szeretnél csatlakozni?')
+    .setPlaceholder('Írd le pár mondatban a hátteredet és hogy mivel tudod támogatni az alapítást...')
+    .setStyle(TextInputStyle.Paragraph)
+    .setRequired(true);
+
+  const linksInput = new TextInputBuilder()
+    .setCustomId('founder_links')
+    .setLabel('GitHub / LinkedIn / Portfólió')
+    .setPlaceholder('https://github.com/...')
+    .setStyle(TextInputStyle.Short)
+    .setRequired(false);
+
+  modal.addComponents(
+    new ActionRowBuilder<TextInputBuilder>().addComponents(roleInput),
+    new ActionRowBuilder<TextInputBuilder>().addComponents(experienceInput),
+    new ActionRowBuilder<TextInputBuilder>().addComponents(linksInput)
+  );
+  return modal;
+}
+
+function buildIncubatorModal(): ModalBuilder {
+  const modal = new ModalBuilder()
+    .setCustomId('incubator_application_modal')
+    .setTitle('Projekt Inkubációs Pályázat (0 Ft előleg)');
+
+  const nameInput = new TextInputBuilder()
+    .setCustomId('inc_project_name')
+    .setLabel('Projekt neve')
+    .setPlaceholder('pl. Firka, Pala, SajátEsztköz')
+    .setStyle(TextInputStyle.Short)
+    .setRequired(true);
+
+  const repoInput = new TextInputBuilder()
+    .setCustomId('inc_repo_url')
+    .setLabel('GitHub Repó / Élő Demó URL')
+    .setPlaceholder('https://github.com/...')
+    .setStyle(TextInputStyle.Short)
+    .setRequired(true);
+
+  const marketInput = new TextInputBuilder()
+    .setCustomId('inc_target_market')
+    .setLabel('Célpiac és mire nyújt jobb megoldást?')
+    .setPlaceholder('pl. Középiskolák / B2G, e-napló kiváltása modern felülettel, X ezer felhasználóval...')
+    .setStyle(TextInputStyle.Paragraph)
+    .setRequired(true);
+
+  const needsInput = new TextInputBuilder()
+    .setCustomId('inc_support_needed')
+    .setLabel('Milyen támogatást kérsz az Inkubátortól?')
+    .setPlaceholder('pl. Jogi ernyő, GDPR audit, 90 napos iskolai pilot tárgyalás, csapattársak')
+    .setStyle(TextInputStyle.Paragraph)
+    .setRequired(true);
+
+  modal.addComponents(
+    new ActionRowBuilder<TextInputBuilder>().addComponents(nameInput),
+    new ActionRowBuilder<TextInputBuilder>().addComponents(repoInput),
+    new ActionRowBuilder<TextInputBuilder>().addComponents(marketInput),
+    new ActionRowBuilder<TextInputBuilder>().addComponents(needsInput)
+  );
+  return modal;
 }
 
 async function startBot() {
@@ -331,6 +418,169 @@ async function startBot() {
         }
         return;
       }
+
+      // E) Alapító Társ / Inkubátor Modal gombok
+      if (interaction.customId === 'open_founder_application_modal') {
+        await interaction.showModal(buildFounderModal());
+        return;
+      }
+
+      if (interaction.customId === 'open_incubator_application_modal') {
+        await interaction.showModal(buildIncubatorModal());
+        return;
+      }
+
+      // F) Admin Jóváhagyás Gombok (Alapító Tag / Inkubált Projekt)
+      if (
+        interaction.customId.startsWith('approve_founder_') ||
+        interaction.customId.startsWith('approve_incubated_')
+      ) {
+        const clicker = await interaction.guild.members.fetch(interaction.user.id);
+        const isAdminOrFounder =
+          clicker.permissions.has(PermissionFlagsBits.Administrator) ||
+          clicker.roles.cache.some((r) => r.name === 'Alapító / Admin' || r.name === 'Alapító Tag');
+
+        if (!isAdminOrFounder) {
+          await interaction.reply({
+            content: '⛔ Csak az **Alapító / Admin** csapat tudja jóváhagyni a jelentkezéseket.',
+            ephemeral: true
+          });
+          return;
+        }
+
+        const isFounderGrant = interaction.customId.startsWith('approve_founder_');
+        const targetUserId = interaction.customId
+          .replace('approve_founder_', '')
+          .replace('approve_incubated_', '');
+        const targetRoleName = isFounderGrant ? 'Alapító Tag' : 'Inkubált Projekt';
+
+        try {
+          const roles = await interaction.guild.roles.fetch();
+          const role = roles.find((r) => r.name === targetRoleName);
+          const targetMember = await interaction.guild.members.fetch(targetUserId);
+
+          if (!role) {
+            await interaction.reply({
+              content: `⚠️ A **${targetRoleName}** szerepkör nem található a szerveren.`,
+              ephemeral: true
+            });
+            return;
+          }
+
+          await targetMember.roles.add(role, `Jóváhagyva általa: ${interaction.user.tag}`);
+          await interaction.reply({
+            content: `✅ <@${targetUserId}> megkapta a **${targetRoleName}** szerepkört! Mostantól látja a zárt alapítói és B2G tárgyaló szobákat.`,
+            ephemeral: false
+          });
+        } catch (err: any) {
+          await interaction.reply({
+            content: `⚠️ Hiba a jóváhagyásnál: ${err.message}`,
+            ephemeral: true
+          });
+        }
+        return;
+      }
+    }
+
+    // 1B. MODAL ŰRLAP BEKÜLDÉSEK (Alapító társ & Inkubációs pályázat)
+    if (interaction.isModalSubmit() && interaction.guild) {
+      if (interaction.customId === 'founder_application_modal') {
+        const roleWanted = interaction.fields.getTextInputValue('founder_role');
+        const exp = interaction.fields.getTextInputValue('founder_experience');
+        const links = interaction.fields.getTextInputValue('founder_links') || 'Nem adott meg';
+
+        const appEmbed = new EmbedBuilder()
+          .setTitle(`🤝 Új Alapító Társ / Mentor Jelentkezés`)
+          .setColor(0xd93b00)
+          .setDescription(`**Jelentkező:** <@${interaction.user.id}> (${interaction.user.tag})`)
+          .addFields(
+            { name: 'Vállalt szerepkör', value: roleWanted, inline: false },
+            { name: 'Tapasztalat & Motiváció', value: exp.slice(0, 1000), inline: false },
+            { name: 'Linkek', value: links, inline: false }
+          )
+          .setTimestamp();
+
+        const approveRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+          new ButtonBuilder()
+            .setCustomId(`approve_founder_${interaction.user.id}`)
+            .setLabel('Jóváhagyás: Alapító Tag rang')
+            .setStyle(ButtonStyle.Success)
+            .setEmoji('✅')
+        );
+
+        const targetCh = interaction.guild.channels.cache.find(
+          (c) => c.isTextBased() && c.name.includes('kormányzati-és-b2g')
+        ) as TextChannel | undefined;
+
+        if (targetCh) {
+          await targetCh.send({ embeds: [appEmbed], components: [approveRow] });
+        }
+
+        await interaction.reply({
+          content:
+            '✅ **Köszönjük a jelentkezésedet az Alapító Magcsapatba!**\n' +
+            'Az adatlapod továbbításra került az adminisztrátorok és az alapító kör számára. Hamarosan felvesszük veled a kapcsolatot és megkapod az **Alapító Tag** jogosultságot!',
+          ephemeral: true
+        });
+        return;
+      }
+
+      if (interaction.customId === 'incubator_application_modal') {
+        const projName = interaction.fields.getTextInputValue('inc_project_name');
+        const repoUrl = interaction.fields.getTextInputValue('inc_repo_url');
+        const market = interaction.fields.getTextInputValue('inc_target_market');
+        const needs = interaction.fields.getTextInputValue('inc_support_needed');
+
+        const incEmbed = new EmbedBuilder()
+          .setTitle(`🚀 Új Inkubációs Projekt: ${projName}`)
+          .setColor(0x00565b)
+          .setDescription(`**Fejlesztő / Beküldő:** <@${interaction.user.id}> (${interaction.user.tag})`)
+          .addFields(
+            { name: 'Repó / Demó', value: repoUrl, inline: false },
+            { name: 'Célpiac és megoldás', value: market.slice(0, 1000), inline: false },
+            { name: 'Igényelt Inkubátori Támogatás', value: needs.slice(0, 1000), inline: false }
+          )
+          .setFooter({ text: '0 Ft előleg • Sikerdíjas Piaci Modell' })
+          .setTimestamp();
+
+        const approveRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+          new ButtonBuilder()
+            .setCustomId(`approve_incubated_${interaction.user.id}`)
+            .setLabel('Inkubálás elfogadása (Rang adása)')
+            .setStyle(ButtonStyle.Success)
+            .setEmoji('🚀')
+        );
+
+        const forumCh = interaction.guild.channels.cache.find(
+          (c) => c.name.includes('inkubátor-pályázatok')
+        ) as ForumChannel | undefined;
+
+        let threadUrl = '';
+        if (forumCh && 'threads' in forumCh) {
+          const mvpTag = forumCh.availableTags.find((t) => t.name.includes('MVP'));
+          const b2gTag = forumCh.availableTags.find((t) => t.name.includes('Oktatás'));
+          const appliedTags = [mvpTag?.id, b2gTag?.id].filter(Boolean) as string[];
+
+          const thread = await forumCh.threads.create({
+            name: `🚀 ${projName} — Piaci & Inkubációs Pályázat`,
+            appliedTags,
+            message: {
+              embeds: [incEmbed],
+              components: [approveRow]
+            }
+          });
+          threadUrl = `https://discord.com/channels/${interaction.guild.id}/${thread.id}`;
+        }
+
+        await interaction.reply({
+          content:
+            `✅ **A(z) „${projName}” inkubációs pályázata sikeresen létrejött!**\n` +
+            (threadUrl ? `📌 **Poszt linkje:** ${threadUrl}\n` : '') +
+            'A közösség és a mentorok itt tudnak csatlakozni hozzád a piacra vitelhez.',
+          ephemeral: true
+        });
+        return;
+      }
     }
 
     // 2. SZEREPKÖR VÁLASZTÓ DROPDOWN MENÜ
@@ -524,18 +774,34 @@ async function startBot() {
       return;
     }
 
+    if (commandName === 'alapitas') {
+      const payload = createFoundingCenterPayload();
+      await interaction.reply({
+        ...payload,
+        ephemeral: true
+      });
+      return;
+    }
+
+    if (commandName === 'inkubacio') {
+      await interaction.showModal(buildIncubatorModal());
+      return;
+    }
+
     if (commandName === 'segitseg') {
       const helpEmbed = new EmbedBuilder()
         .setTitle('📚 StrataHu Bot — Útmutató & Parancsok')
         .setColor(Colors.Indigo)
         .setDescription(
           'A StrataHu AI Bot a magyar fejlesztői közösség hivatalos asszisztense. ' +
-          'Kereshetsz projekteket, megnézheted a ranglistát, hitelesítheted a profilodat, vagy testreszabhatod a szerepköreidet.'
+          'Kereshetsz projekteket, megnézheted a ranglistát, jelentkezhetsz alapító társnak, vagy beküldheted a projektedet inkubációra.'
         )
         .addFields(
           {
             name: '🤖 Elérhető parancsok',
             value:
+              '• `/alapitas` — Szövetkezet & Egyesület alapítási terv (0 Ft) és alapítótárs jelentkezés\n' +
+              '• `/inkubacio` — Projekt inkubációs jelentkezési űrlap (0 Ft előleg, piacra vitel)\n' +
               '• `/hitelesites github:<név>` — Profil összekapcsolása GitHub fiókkal\n' +
               '• `/szerepkorok` — Szakterületek és érdeklődési körök beállítása\n' +
               '• `/projekt nev:<keresés>` — Magyar fejlesztés részleteinek lekérése\n' +

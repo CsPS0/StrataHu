@@ -1,5 +1,5 @@
 <script setup lang="ts">
-export type ActiveViewMode = 'explore' | 'tierlist' | 'top10';
+export type ActiveViewMode = 'explore' | 'tierlist' | 'top10' | 'incubator';
 
 const props = defineProps<{
   activeView: ActiveViewMode;
@@ -18,7 +18,8 @@ const emit = defineEmits<{
 const navItems: Array<{ id: ActiveViewMode; label: string }> = [
   { id: 'explore', label: 'Piactér' },
   { id: 'tierlist', label: 'Tier List' },
-  { id: 'top10', label: 'Top 10 Ranglista' }
+  { id: 'top10', label: 'Top 10 Ranglista' },
+  { id: 'incubator', label: 'Alapítás & Inkubátor' }
 ];
 </script>
 

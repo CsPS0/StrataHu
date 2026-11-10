@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import Header, { type ActiveViewMode } from './components/Header.vue';
 import FilterSidebar, { type FacetOption } from './components/FilterSidebar.vue';
+import IncubatorLaunchpad from './components/IncubatorLaunchpad.vue';
 import ProjectCard from './components/ProjectCard.vue';
 import SubmissionModal from './components/SubmissionModal.vue';
 import Footer from './components/Footer.vue';
@@ -593,6 +594,20 @@ onBeforeUnmount(() => {
             >
               Top 10 Ranglista
             </button>
+            <button
+              type="button"
+              role="tab"
+              :aria-selected="activeView === 'incubator'"
+              class="min-h-[38px] cursor-pointer rounded-full px-5 py-1.5 text-sm font-semibold transition-all active:scale-[0.98]"
+              :class="
+                activeView === 'incubator'
+                  ? 'border border-[#cbd6e2] bg-white text-[#d93b00] shadow-2xs'
+                  : 'text-[#516f90] hover:bg-[#f5f8fa] hover:text-[#d93b00]'
+              "
+              @click="activeView = 'incubator'"
+            >
+              Alapítás &amp; Inkubátor
+            </button>
           </div>
         </div>
       </div>
@@ -622,7 +637,9 @@ onBeforeUnmount(() => {
         </button>
       </div>
 
-      <div class="flex flex-col items-start gap-7 lg:flex-row lg:gap-8">
+      <IncubatorLaunchpad v-if="activeView === 'incubator'" />
+
+      <div v-else class="flex flex-col items-start gap-7 lg:flex-row lg:gap-8">
         <!-- LEFT SIDEBAR: Collapsible Faceted Filters -->
         <FilterSidebar
           :categories="categoryFacets"
@@ -655,6 +672,13 @@ onBeforeUnmount(() => {
               </p>
             </div>
             <div class="flex shrink-0 flex-wrap items-center gap-2.5">
+              <button
+                type="button"
+                class="inline-flex min-h-[40px] cursor-pointer items-center justify-center rounded-full border border-[#d93b00] bg-white px-4 py-2 text-xs font-semibold text-[#d93b00] transition-all hover:bg-[#fff5f2] active:scale-[0.98]"
+                @click="activeView = 'incubator'"
+              >
+                Alapítás &amp; Inkubátor &rarr;
+              </button>
               <a
                 href="https://discord.gg/kNt5sqzM6w"
                 target="_blank"
