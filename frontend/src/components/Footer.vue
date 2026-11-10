@@ -30,7 +30,7 @@ const quickCategories = [
         <div class="space-y-4">
           <div class="flex items-center gap-2.5">
             <img
-              src="/icons/stratahu-icon.jpg"
+              src="/icons/stratahu-icon.jpg?v=2d"
               alt="StrataHu"
               width="32"
               height="32"

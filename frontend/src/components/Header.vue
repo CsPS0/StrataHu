@@ -90,7 +90,7 @@ const navItems: Array<{ id: ActiveViewMode; label: string }> = [
             @click.prevent="emit('update:activeView', 'explore')"
           >
             <img
-              src="/icons/stratahu-icon.jpg"
+              src="/icons/stratahu-icon.jpg?v=2d"
               alt="StrataHu"
               width="36"
               height="36"
@@ -153,7 +153,7 @@ const navItems: Array<{ id: ActiveViewMode; label: string }> = [
           @click.prevent="emit('update:activeView', 'explore')"
         >
           <img
-            src="/icons/stratahu-icon.jpg"
+            src="/icons/stratahu-icon.jpg?v=2d"
             alt="StrataHu"
             width="32"
             height="32"
