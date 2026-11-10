@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import Header, { type ActiveViewMode } from './components/Header.vue';
 import FilterSidebar, { type FacetOption } from './components/FilterSidebar.vue';
 import IncubatorLaunchpad from './components/IncubatorLaunchpad.vue';
@@ -394,6 +394,11 @@ function openProjectDetails(project: ProjectRecord) {
   requesterContact.value = '';
   takedownReason.value = '';
   detailsDialogRef.value?.showModal();
+  void nextTick(() => {
+    if (detailsDialogRef.value) {
+      detailsDialogRef.value.scrollTop = 0;
+    }
+  });
 }
 
 function closeProjectDetails() {
@@ -1112,11 +1117,11 @@ onBeforeUnmount(() => {
       ref="detailsDialogRef"
       v-bind="{ closedby: 'any' }"
       aria-labelledby="project-details-title"
-      class="m-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-[#dbe4ed] bg-white p-0 text-[#213343] shadow-2xl"
+      class="m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-3xl overflow-x-hidden overflow-y-auto rounded-2xl border border-[#dbe4ed] bg-white p-0 text-[#213343] shadow-2xl"
     >
       <div v-if="selectedProject">
         <!-- Showcase Cover Banner -->
-        <div class="relative aspect-[16/9] w-full bg-[#f5f8fa]">
+        <div class="relative aspect-[16/9] max-h-[380px] w-full overflow-hidden rounded-t-2xl bg-[#f5f8fa]">
           <img
             v-if="activeGalleryImage || selectedProject.imageUrl"
             :src="activeGalleryImage || selectedProject.imageUrl!"
@@ -1257,7 +1262,7 @@ onBeforeUnmount(() => {
           <!-- Detailed Overview -->
           <div class="space-y-2">
             <h3 class="font-display text-sm font-bold text-[#213343]">A projektről részletesen</h3>
-            <p class="text-sm leading-relaxed text-[#33475b]">
+            <p class="whitespace-pre-line break-words text-sm leading-relaxed text-[#33475b]">
               {{ selectedProject.longDescription || selectedProject.description }}
             </p>
           </div>
