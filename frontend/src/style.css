@@ -1,19 +1,103 @@
 @import "tailwindcss";
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
+  --font-heading: 'Lexend Deca', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --scrollbar-track: #0b0d12;
-  --scrollbar-thumb: #2a2f3d;
+
+  /* HubSpot Ecosystem Marketplace Inspired Design Tokens */
+  --surface-page: #f0f2f5;
+  --surface-card: #ffffff;
+  --surface-subtle: #f5f8fa;
+  --surface-footer: #213343;
+
+  --ink-primary: #213343;
+  --ink-body: #33475b;
+  --ink-muted: #516f90;
+
+  --accent-coral: #d93b00;
+  --accent-coral-hover: #b83200;
+  --accent-teal: #00565b;
+  --accent-teal-hover: #004246;
+  --accent-purple: #6a55fa;
+  --accent-blue: #0066cc;
+  --accent-gold: #d68f00;
+
+  --border-subtle: #dbe4ed;
+  --border-strong: #cbd6e2;
+
+  --scrollbar-track: #ffffff;
+  --scrollbar-thumb: #cbd6e2;
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
-  accent-color: #6366f1;
+  accent-color: var(--accent-teal);
 }
 
 body {
   font-family: var(--font-sans);
-  background-color: #0b0d12;
-  color: #f1f5f9;
-  min-height: 100vh;
+  background-color: var(--surface-page);
+  color: var(--ink-primary);
+  line-height: 1.5;
+  min-block-size: 100dvh;
+}
+
+h1, h2, h3, .font-display {
+  font-family: var(--font-heading);
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+/* Visually hidden utility per Modern Web Guidance accessibility guide */
+.visually-hidden:where(:not(:focus-within, :active)) {
+  position: absolute !important;
+  clip-path: inset(50%) !important;
+  overflow: hidden !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  white-space: nowrap !important;
+}
+
+.skip-link:focus-visible {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 100;
+  background-color: var(--accent-teal);
+  color: #ffffff;
+  padding: 0.75rem 1.25rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-decoration: none;
+  box-shadow: 0 10px 25px rgba(33, 51, 67, 0.25);
+}
+
+/* Custom slim scrollbars for sidebar filter accordions matching HubSpot UI */
+.filter-scroll-box {
+  max-block-size: 210px;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd6e2 transparent;
+}
+
+@supports not (scrollbar-color: auto) {
+  .filter-scroll-box::-webkit-scrollbar {
+    width: 6px;
+  }
+  .filter-scroll-box::-webkit-scrollbar-thumb {
+    background: #cbd6e2;
+    border-radius: 9999px;
+  }
+  .filter-scroll-box::-webkit-scrollbar-track {
+    background: transparent;
+  }
 }
 
 /* Native modal dialog scroll containment per Modern Web Guidance */
@@ -24,8 +108,8 @@ dialog:modal {
 dialog::backdrop {
   overflow: hidden;
   overscroll-behavior: contain;
-  background-color: rgba(7, 9, 14, 0.78);
-  backdrop-filter: blur(8px);
+  background-color: rgba(33, 51, 67, 0.58);
+  backdrop-filter: blur(6px);
 }
 
 /* Deferred validation styling (:user-invalid + fallback class) */
@@ -33,8 +117,8 @@ input:user-invalid,
 textarea:user-invalid,
 input.user-invalid-fallback,
 textarea.user-invalid-fallback {
-  border-color: #f87171;
-  background-color: rgba(127, 29, 29, 0.2);
+  border-color: #dc2626;
+  background-color: #fef2f2;
 }
 
 input:user-invalid + .field-error-msg,
@@ -46,26 +130,23 @@ textarea.user-invalid-fallback + .field-error-msg {
 
 input:user-valid,
 textarea:user-valid {
-  border-color: rgba(99, 102, 241, 0.6);
+  border-color: rgba(0, 86, 91, 0.65);
 }
 
-:focus-visible {
-  outline: 2px solid #818cf8;
+/* Accessible focus rings with high contrast & offset */
+:where(a:any-link, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-teal);
   outline-offset: 2px;
 }
 
-@supports not (scrollbar-color: auto) {
-  ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+@media (forced-colors: active) {
+  :where(a:any-link, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 3px solid CanvasText;
   }
+}
 
-  ::-webkit-scrollbar-thumb {
-    background: var(--scrollbar-thumb);
-    border-radius: 9999px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: var(--scrollbar-track);
-  }
+/* Below-the-fold performance deferring for collection & footer bands */
+.deferred-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto none auto 340px;
 }
